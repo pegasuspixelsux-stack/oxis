@@ -1,6 +1,6 @@
 export const ESTIMATE_APR = 6.9;
 export const ESTIMATE_TERM_MONTHS = 60;
-export const ESTIMATE_DOWN_PERCENT = 0.1;
+export const ESTIMATE_DOWN_PERCENT = 0.3;
 
 /** "Starting at" monthly payment shown on listing cards, using standard assumptions. */
 export function estimateListingPayment(price: number): number {

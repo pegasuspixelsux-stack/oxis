@@ -22,6 +22,7 @@ const OPTION_SETS: Record<string, string[]> = {
   financing: ["Contado (Cash)", "Financiado", "Trade-in / Permuta"],
   "trade-in": ["Sí", "No", "Tal vez"],
   "test-drive": ["Sí", "No"],
+  "callback-time": ["Mañana (9 a 12)", "Tarde (12 a 16)", "Noche (16 a 19)", "Cualquier horario"],
 };
 
 // Best-effort pull of a usable email/phone out of whatever was answered —

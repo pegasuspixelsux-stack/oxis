@@ -7,6 +7,7 @@ import { AnimatePresence, motion } from "motion/react";
 import { collection, getDocs, orderBy, query } from "firebase/firestore";
 import { db } from "@/lib/firebase";
 import { CARS_COLLECTION, type Car } from "@/lib/db/cars";
+import { estimateListingPayment } from "@/lib/finance";
 import { Container } from "@/components/ui/container";
 import { Reveal } from "@/components/reveal";
 import { FilterSelect } from "@/components/inventory/filter-select";
@@ -223,7 +224,7 @@ export function InventorySection() {
 
         {filtered.length > 0 && (
           <p className="mt-8 text-xs text-fg-subtle">
-            *Cuotas estimadas con 10% de anticipo, TNA 6,9% a 60 meses, sujeto a aprobación
+            *Cuotas estimadas con 30% de anticipo, TNA 6,9% a 60 meses, sujeto a aprobación
             crediticia. La cuota varía según el precio del vehículo y no incluye impuestos ni
             gastos de gestoría.
           </p>
@@ -235,6 +236,9 @@ export function InventorySection() {
 
 function FeaturedCarCard({ car }: { car: Car }) {
   const cover = car.images?.[0] || car.img || "";
+  const numericPrice = parseInt(String(car.price).replace(/[^0-9]/g, ""), 10);
+  const monthlyEstimate =
+    Number.isFinite(numericPrice) && numericPrice > 0 ? estimateListingPayment(numericPrice) : null;
 
   return (
     <motion.article
@@ -276,7 +280,19 @@ function FeaturedCarCard({ car }: { car: Car }) {
           </div>
 
           <div className="mt-5 flex items-center justify-between border-t border-border pt-4">
-            <span className="font-mono text-xl font-semibold text-fg">{car.price}</span>
+            <div>
+              {monthlyEstimate ? (
+                <>
+                  <span className="font-mono text-xl font-semibold text-fg">
+                    ${Math.round(monthlyEstimate).toLocaleString("en-US")}
+                    <span className="text-sm font-normal text-fg-muted">/mes*</span>
+                  </span>
+                  <p className="mt-0.5 text-xs text-fg-subtle">o {car.price}</p>
+                </>
+              ) : (
+                <span className="font-mono text-xl font-semibold text-fg">{car.price}</span>
+              )}
+            </div>
             <span className="inline-flex items-center gap-1.5 rounded-lg px-3 py-2 text-sm font-medium text-accent transition-colors group-hover:bg-accent-soft">
               Ver ficha
               <ArrowRightIcon className="h-3.5 w-3.5" />

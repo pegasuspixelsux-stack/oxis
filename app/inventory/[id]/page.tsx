@@ -8,6 +8,7 @@ import { db } from "@/lib/firebase";
 import { CARS_COLLECTION, type Car } from "@/lib/db/cars";
 import { useSettings } from "@/components/settings-provider";
 import { buildWhatsAppLink } from "@/lib/whatsapp";
+import { estimateListingPayment } from "@/lib/finance";
 
 const FALLBACK_IMAGE =
   "https://images.unsplash.com/photo-1555215695-3004980ad54e?auto=format&fit=crop&w=1200&q=80";
@@ -134,6 +135,12 @@ export default function EditorialCarDetailPage() {
 
   const images = car.images && car.images.length > 0 ? car.images : [car.img || FALLBACK_IMAGE];
   const carFeatures = car.features && car.features.length > 0 ? car.features : DEFAULT_FEATURES;
+
+  // car.price is a pre-formatted display string ("$28,995") — parse it back
+  // to a number just to drive the "starting at" monthly estimate, same
+  // financing assumptions used on the homepage's featured cards.
+  const numericPrice = parseInt(car.price.replace(/[^0-9]/g, ""), 10);
+  const monthlyEstimate = Number.isFinite(numericPrice) && numericPrice > 0 ? estimateListingPayment(numericPrice) : null;
   const whatsappUrl = buildWhatsAppLink(settings.whatsappNumber, message);
 
   return (
@@ -179,8 +186,24 @@ export default function EditorialCarDetailPage() {
             {car.title}
           </h1>
 
-          <div className="pt-2">
-            <span className="font-mono text-xl font-medium tracking-tight text-blue-600">{car.price}</span>
+          <div className="pt-3">
+            {monthlyEstimate ? (
+              <>
+                <div className="font-mono text-4xl font-bold tracking-tight text-blue-600 sm:text-5xl">
+                  ${Math.round(monthlyEstimate).toLocaleString("en-US")}
+                  <span className="text-lg font-medium text-slate-400">/mes*</span>
+                </div>
+                <p className="mt-1 text-sm text-slate-500">o {car.price} de contado</p>
+                <p className="mt-2 text-[11px] text-slate-400">
+                  *Cuota estimada con 30% de anticipo, TNA 6,9% a 60 meses, sujeto a aprobación
+                  crediticia.
+                </p>
+              </>
+            ) : (
+              <span className="font-mono text-4xl font-bold tracking-tight text-blue-600 sm:text-5xl">
+                {car.price}
+              </span>
+            )}
           </div>
         </div>
 
