@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import { createLead } from "@/lib/db/leads";
 
 type ContactPayload = {
   name?: string;
@@ -34,12 +35,24 @@ export async function POST(request: Request) {
     return NextResponse.json({ ok: false, errors }, { status: 422 });
   }
 
-  // In production this would persist the lead and notify the sales team.
-  console.log("[contact] new inquiry", {
-    name: body.name,
-    email: body.email,
-    vehicleId: body.vehicleId ?? null,
-  });
+  try {
+    await createLead({
+      name: body.name!.trim(),
+      email: body.email!.trim(),
+      phone: body.phone!.trim(),
+      preferredContact: body.preferredContact ?? "Email",
+      vehicleId: body.vehicleId && body.vehicleId !== "none" ? body.vehicleId : null,
+      preferredDate: body.preferredDate || null,
+      preferredTime: body.preferredTime || null,
+      message: body.message ?? "",
+    });
+  } catch (error) {
+    console.error("[contact] failed to persist lead", error);
+    return NextResponse.json(
+      { ok: false, error: "No se pudo guardar la consulta. Intentá de nuevo más tarde." },
+      { status: 500 }
+    );
+  }
 
   return NextResponse.json({ ok: true });
 }

@@ -1,22 +1,45 @@
 import Image from "next/image";
 import Link from "next/link";
 import { vehicles, formatPrice } from "@/lib/vehicles";
+import { listLeads, LEAD_STAGE_LABELS, type Lead } from "@/lib/db/leads";
 
-const STATS = [
-  { label: "Inventario Activo", value: `${vehicles.length} autos`, change: "+2 esta semana" },
-  { label: "Consultas Totales", value: "1.280", change: "+12,5%" },
-  { label: "Tasa de Conversión", value: "4,8%", change: "+0,4%" },
-  { label: "Calificación Google", value: "4.9 / 5", change: "480+ reseñas" },
-];
+// The leads panel below reads live Firestore data on every request.
+export const dynamic = "force-dynamic";
 
-const RECENT_LEADS = [
-  { name: "Micaela Vance", vehicle: "2019 BMW M4", status: "Consulta nueva", time: "hace 12m" },
-  { name: "Sara Jenkins", vehicle: "2018 Porsche Panamera", status: "Prueba agendada", time: "hace 1h" },
-  { name: "Carlos Méndez", vehicle: "Tasación de canje", status: "Revisión de documentos", time: "hace 3h" },
-];
+function vehicleLabel(vehicleId: string | null): string {
+  if (!vehicleId) return "Aún no está seguro";
+  const vehicle = vehicles.find((v) => v.id === vehicleId);
+  return vehicle ? `${vehicle.year} ${vehicle.make} ${vehicle.model}` : vehicleId;
+}
 
-export default function DashboardOverview() {
+function relativeTime(iso: string): string {
+  const diffMs = Date.now() - new Date(iso).getTime();
+  const minutes = Math.round(diffMs / 60_000);
+  if (minutes < 1) return "recién";
+  if (minutes < 60) return `hace ${minutes}m`;
+  const hours = Math.round(minutes / 60);
+  if (hours < 24) return `hace ${hours}h`;
+  return `hace ${Math.round(hours / 24)}d`;
+}
+
+export default async function DashboardOverview() {
   const recentVehicles = vehicles.slice(0, 3);
+
+  let leads: Lead[] = [];
+  let leadsError: string | null = null;
+  try {
+    leads = await listLeads();
+  } catch (error) {
+    leadsError = error instanceof Error ? error.message : "Error desconocido.";
+  }
+  const recentLeads = leads.slice(0, 3);
+
+  const STATS = [
+    { label: "Inventario Activo", value: `${vehicles.length} autos`, change: "+2 esta semana" },
+    { label: "Consultas Totales", value: leadsError ? "—" : String(leads.length), change: "" },
+    { label: "Tasa de Conversión", value: "4,8%", change: "+0,4%" },
+    { label: "Calificación Google", value: "4.9 / 5", change: "480+ reseñas" },
+  ];
 
   return (
     <div className="space-y-8">
@@ -85,32 +108,33 @@ export default function DashboardOverview() {
               Ver todas
             </Link>
           </div>
-          <div className="space-y-3">
-            {RECENT_LEADS.map((lead) => (
-              <div
-                key={lead.name}
-                className="flex items-center justify-between rounded-xl border border-black/[0.06] bg-[#F5F5F7]/60 p-3"
-              >
-                <div>
-                  <p className="text-xs font-semibold text-[#1D1D1F]">{lead.name}</p>
-                  <p className="mt-0.5 text-[11px] text-[#6E6E73]">{lead.vehicle}</p>
+          {leadsError ? (
+            <p className="text-xs text-[#8A5300]">No se pudo conectar con Firestore: {leadsError}</p>
+          ) : recentLeads.length === 0 ? (
+            <p className="text-xs text-[#6E6E73]">Todavía no hay consultas.</p>
+          ) : (
+            <div className="space-y-3">
+              {recentLeads.map((lead) => (
+                <div
+                  key={lead.id}
+                  className="flex items-center justify-between rounded-xl border border-black/[0.06] bg-[#F5F5F7]/60 p-3"
+                >
+                  <div>
+                    <p className="text-xs font-semibold text-[#1D1D1F]">{lead.name}</p>
+                    <p className="mt-0.5 text-[11px] text-[#6E6E73]">{vehicleLabel(lead.vehicleId)}</p>
+                  </div>
+                  <div className="text-right">
+                    <span className="rounded-full bg-[#0071E3]/10 px-2 py-0.5 text-[10px] font-semibold text-[#0071E3]">
+                      {LEAD_STAGE_LABELS[lead.stage]}
+                    </span>
+                    <p className="mt-1 text-[10px] text-[#6E6E73]">{relativeTime(lead.createdAt)}</p>
+                  </div>
                 </div>
-                <div className="text-right">
-                  <span className="rounded-full bg-[#0071E3]/10 px-2 py-0.5 text-[10px] font-semibold text-[#0071E3]">
-                    {lead.status}
-                  </span>
-                  <p className="mt-1 text-[10px] text-[#6E6E73]">{lead.time}</p>
-                </div>
-              </div>
-            ))}
-          </div>
+              ))}
+            </div>
+          )}
         </div>
       </div>
-
-      <p className="text-xs text-[#6E6E73]">
-        * Las consultas mostradas son datos de ejemplo hasta conectar el formulario de contacto a
-        una base de datos.
-      </p>
     </div>
   );
 }

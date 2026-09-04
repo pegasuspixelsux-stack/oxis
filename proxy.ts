@@ -1,18 +1,33 @@
-import { clerkMiddleware, createRouteMatcher } from "@clerk/nextjs/server";
+import { NextResponse } from "next/server";
+import type { NextRequest } from "next/server";
+import { adminAuth, SESSION_COOKIE_NAME } from "@/lib/firebase-admin";
 
-const isProtectedRoute = createRouteMatcher(["/dashboard(.*)"]);
-
-export default clerkMiddleware(async (auth, req) => {
-  if (isProtectedRoute(req)) {
-    await auth.protect();
+export default async function proxy(request: NextRequest) {
+  if (!request.nextUrl.pathname.startsWith("/dashboard")) {
+    return NextResponse.next();
   }
-});
+
+  const sessionCookie = request.cookies.get(SESSION_COOKIE_NAME)?.value;
+  if (!sessionCookie) {
+    return redirectToLogin(request);
+  }
+
+  try {
+    // `true` checks server-side revocation (e.g. after a password change).
+    await adminAuth().verifySessionCookie(sessionCookie, true);
+    return NextResponse.next();
+  } catch (error) {
+    console.error("[proxy] session cookie verification failed", error);
+    return redirectToLogin(request);
+  }
+}
+
+function redirectToLogin(request: NextRequest) {
+  const url = new URL("/login", request.url);
+  url.searchParams.set("redirect_url", request.nextUrl.pathname);
+  return NextResponse.redirect(url);
+}
 
 export const config = {
-  matcher: [
-    // Skip Next.js internals and static files
-    "/((?!_next|[^?]*\\.(?:html?|css|js(?!on)|jpe?g|webp|png|gif|svg|ttf|woff2?|ico|csv|docx?|xlsx?|zip|webmanifest)).*)",
-    // Always run for API routes
-    "/(api|trpc)(.*)",
-  ],
+  matcher: ["/dashboard(.*)"],
 };

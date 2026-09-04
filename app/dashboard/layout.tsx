@@ -1,8 +1,10 @@
 "use client";
 
 import Link from "next/link";
-import { usePathname } from "next/navigation";
-import { useUser, useClerk } from "@clerk/nextjs";
+import { usePathname, useRouter } from "next/navigation";
+import { signOut as firebaseSignOut } from "firebase/auth";
+import { auth } from "@/lib/firebase";
+import { useAuth } from "@/components/auth-provider";
 import { GaugeIcon, MailIcon, TagIcon, ChecklistIcon, ArrowRightIcon } from "@/components/icons";
 
 const NAV_LINKS = [
@@ -14,8 +16,14 @@ const NAV_LINKS = [
 
 export default function DashboardLayout({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
-  const { user, isLoaded } = useUser();
-  const { signOut } = useClerk();
+  const router = useRouter();
+  const { user, loading } = useAuth();
+
+  async function handleSignOut() {
+    await firebaseSignOut(auth);
+    await fetch("/api/auth/session", { method: "DELETE" });
+    router.push("/login");
+  }
 
   return (
     <div className="flex min-h-screen bg-[#F5F5F7] text-[#1D1D1F]">
@@ -56,20 +64,18 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
         <div className="border-t border-black/[0.06] p-4">
           <div className="mb-3 flex items-center gap-3 px-2">
             <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-[#0071E3] text-sm font-semibold text-white">
-              {isLoaded && user?.primaryEmailAddress
-                ? user.primaryEmailAddress.emailAddress.charAt(0).toUpperCase()
-                : "…"}
+              {!loading && user?.email ? user.email.charAt(0).toUpperCase() : "…"}
             </div>
             <div className="overflow-hidden">
               <p className="truncate text-xs font-medium text-[#1D1D1F]">
-                {isLoaded ? user?.primaryEmailAddress?.emailAddress ?? "Usuario" : "Cargando…"}
+                {loading ? "Cargando…" : user?.email ?? "Usuario"}
               </p>
               <p className="text-[11px] text-[#6E6E73]">Agente verificado</p>
             </div>
           </div>
           <button
             type="button"
-            onClick={() => signOut({ redirectUrl: "/login" })}
+            onClick={handleSignOut}
             className="w-full rounded-xl border border-black/10 bg-white px-3 py-2 text-xs font-medium text-[#6E6E73] transition-all active:scale-[0.98] hover:border-red-300 hover:text-red-600"
           >
             Cerrar sesión

@@ -3,90 +3,76 @@
 import { useState, type FormEvent } from "react";
 import Image from "next/image";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
-import { useSignIn } from "@clerk/nextjs";
+import { signInWithEmailAndPassword, sendPasswordResetEmail, type AuthError } from "firebase/auth";
+import { auth } from "@/lib/firebase";
 
 const inputClasses =
   "h-12 w-full rounded-xl border border-white/25 bg-white/10 px-4 text-sm text-white placeholder-white/40 outline-none backdrop-blur-md transition-colors focus:border-white/60";
 
-type Mode = "signin" | "reset-request" | "reset-verify";
+type Mode = "signin" | "reset-request";
+
+const AUTH_ERROR_MESSAGES: Record<string, string> = {
+  "auth/invalid-credential": "Correo o contraseña incorrectos.",
+  "auth/wrong-password": "Correo o contraseña incorrectos.",
+  "auth/user-not-found": "Correo o contraseña incorrectos.",
+  "auth/invalid-email": "Ingresá un correo electrónico válido.",
+  "auth/too-many-requests": "Demasiados intentos. Probá de nuevo en unos minutos.",
+};
+
+function authErrorMessage(error: unknown): string {
+  const code = (error as AuthError)?.code;
+  return (code && AUTH_ERROR_MESSAGES[code]) || "Ocurrió un error. Intentá de nuevo.";
+}
 
 export default function LoginPage() {
-  const { signIn, errors, fetchStatus } = useSignIn();
-  const router = useRouter();
-
   const [mode, setMode] = useState<Mode>("signin");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const [code, setCode] = useState("");
-  const [newPassword, setNewPassword] = useState("");
   const [globalError, setGlobalError] = useState("");
   const [info, setInfo] = useState("");
-
-  async function finalizeAndRedirect() {
-    await signIn.finalize({
-      navigate: ({ decorateUrl }) => {
-        const url = decorateUrl("/dashboard");
-        if (url.startsWith("http")) {
-          window.location.href = url;
-        } else {
-          router.push(url as "/dashboard");
-        }
-      },
-    });
-  }
+  const [submitting, setSubmitting] = useState(false);
 
   async function handleSignIn(e: FormEvent) {
     e.preventDefault();
     setGlobalError("");
+    setSubmitting(true);
 
-    const { error } = await signIn.password({ identifier: email, password });
-    if (error) return;
+    try {
+      const credential = await signInWithEmailAndPassword(auth, email, password);
+      const idToken = await credential.user.getIdToken();
 
-    if (signIn.status === "complete") {
-      await finalizeAndRedirect();
-    } else {
-      setGlobalError("No se pudo completar el inicio de sesión. Intentá de nuevo.");
+      const res = await fetch("/api/auth/session", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ idToken }),
+      });
+      if (!res.ok) throw new Error("session-failed");
+
+      // Full navigation so proxy.ts re-checks the freshly-set session cookie.
+      const redirectTo = new URLSearchParams(window.location.search).get("redirect_url");
+      window.location.assign(redirectTo && redirectTo.startsWith("/") ? redirectTo : "/dashboard");
+    } catch (error) {
+      setSubmitting(false);
+      setGlobalError(
+        error instanceof Error && error.message === "session-failed"
+          ? "No se pudo completar el inicio de sesión. Intentá de nuevo."
+          : authErrorMessage(error)
+      );
     }
   }
 
   async function handleRequestReset(e: FormEvent) {
     e.preventDefault();
     setGlobalError("");
+    setSubmitting(true);
 
-    const { error: createError } = await signIn.create({ identifier: email });
-    if (createError) {
-      setGlobalError("No encontramos una cuenta con ese correo.");
-      return;
-    }
-
-    const { error } = await signIn.resetPasswordEmailCode.sendCode();
-    if (error) {
-      setGlobalError("No se pudo enviar el código. Intentá de nuevo.");
-      return;
-    }
-
-    setInfo(`Te enviamos un código a ${email}.`);
-    setMode("reset-verify");
-  }
-
-  async function handleSubmitNewPassword(e: FormEvent) {
-    e.preventDefault();
-    setGlobalError("");
-
-    const { error: verifyError } = await signIn.resetPasswordEmailCode.verifyCode({ code });
-    if (verifyError) {
-      setGlobalError("Código incorrecto. Revisalo e intentá de nuevo.");
-      return;
-    }
-
-    const { error } = await signIn.resetPasswordEmailCode.submitPassword({
-      password: newPassword,
-    });
-    if (error) return;
-
-    if (signIn.status === "complete") {
-      await finalizeAndRedirect();
+    try {
+      await sendPasswordResetEmail(auth, email);
+      setInfo(`Te enviamos un enlace para restablecer tu contraseña a ${email}.`);
+    } catch (error) {
+      setGlobalError(authErrorMessage(error));
+    } finally {
+      setSubmitting(false);
     }
   }
 
@@ -136,12 +122,10 @@ export default function LoginPage() {
               <h2 className="mt-2 text-2xl font-semibold tracking-tight text-white drop-shadow-sm">
                 {mode === "signin" && "Bienvenido de nuevo"}
                 {mode === "reset-request" && "Restablecer contraseña"}
-                {mode === "reset-verify" && "Ingresá el código"}
               </h2>
               <p className="mt-1 text-xs text-white/60">
                 {mode === "signin" && "Ingresá tus credenciales para acceder al panel"}
-                {mode === "reset-request" && "Te enviaremos un código a tu correo"}
-                {mode === "reset-verify" && (info || "Revisá tu bandeja de entrada")}
+                {mode === "reset-request" && (info || "Te enviaremos un enlace a tu correo")}
               </p>
             </div>
 
@@ -159,11 +143,6 @@ export default function LoginPage() {
                     required
                     className={inputClasses}
                   />
-                  {errors?.fields?.identifier && (
-                    <p className="mt-1.5 text-xs text-red-300">
-                      {errors.fields.identifier.message}
-                    </p>
-                  )}
                 </label>
 
                 <label className="block">
@@ -173,6 +152,7 @@ export default function LoginPage() {
                       type="button"
                       onClick={() => {
                         setGlobalError("");
+                        setInfo("");
                         setMode("reset-request");
                       }}
                       className="text-xs font-medium text-[#5eb1ff] hover:underline"
@@ -188,19 +168,16 @@ export default function LoginPage() {
                     required
                     className={inputClasses}
                   />
-                  {errors?.fields?.password && (
-                    <p className="mt-1.5 text-xs text-red-300">{errors.fields.password.message}</p>
-                  )}
                 </label>
 
                 {globalError && <p className="text-xs text-red-300">{globalError}</p>}
 
                 <button
                   type="submit"
-                  disabled={fetchStatus === "fetching"}
+                  disabled={submitting}
                   className="mt-2 h-12 w-full rounded-xl bg-white font-medium text-[#1D1D1F] transition-all active:scale-[0.98] hover:bg-white/90 disabled:opacity-50"
                 >
-                  {fetchStatus === "fetching" ? "Ingresando…" : "Ingresar"}
+                  {submitting ? "Ingresando…" : "Ingresar"}
                 </button>
               </form>
             )}
@@ -217,71 +194,30 @@ export default function LoginPage() {
                     onChange={(e) => setEmail(e.target.value)}
                     autoComplete="email"
                     required
+                    disabled={Boolean(info)}
                     className={inputClasses}
                   />
                 </label>
 
                 {globalError && <p className="text-xs text-red-300">{globalError}</p>}
 
-                <button
-                  type="submit"
-                  disabled={fetchStatus === "fetching"}
-                  className="mt-2 h-12 w-full rounded-xl bg-white font-medium text-[#1D1D1F] transition-all active:scale-[0.98] hover:bg-white/90 disabled:opacity-50"
-                >
-                  {fetchStatus === "fetching" ? "Enviando…" : "Enviar código"}
-                </button>
+                {!info && (
+                  <button
+                    type="submit"
+                    disabled={submitting}
+                    className="mt-2 h-12 w-full rounded-xl bg-white font-medium text-[#1D1D1F] transition-all active:scale-[0.98] hover:bg-white/90 disabled:opacity-50"
+                  >
+                    {submitting ? "Enviando…" : "Enviar enlace"}
+                  </button>
+                )}
 
                 <button
                   type="button"
-                  onClick={() => setMode("signin")}
-                  className="w-full text-center text-xs font-medium text-white/70 hover:text-white"
-                >
-                  &larr; Volver a iniciar sesión
-                </button>
-              </form>
-            )}
-
-            {mode === "reset-verify" && (
-              <form onSubmit={handleSubmitNewPassword} className="space-y-4" noValidate>
-                <label className="block">
-                  <span className="mb-1.5 block text-xs font-medium text-white/70">Código</span>
-                  <input
-                    type="text"
-                    inputMode="numeric"
-                    value={code}
-                    onChange={(e) => setCode(e.target.value)}
-                    required
-                    className={inputClasses}
-                  />
-                </label>
-
-                <label className="block">
-                  <span className="mb-1.5 block text-xs font-medium text-white/70">
-                    Nueva contraseña
-                  </span>
-                  <input
-                    type="password"
-                    value={newPassword}
-                    onChange={(e) => setNewPassword(e.target.value)}
-                    autoComplete="new-password"
-                    required
-                    className={inputClasses}
-                  />
-                </label>
-
-                {globalError && <p className="text-xs text-red-300">{globalError}</p>}
-
-                <button
-                  type="submit"
-                  disabled={fetchStatus === "fetching"}
-                  className="mt-2 h-12 w-full rounded-xl bg-white font-medium text-[#1D1D1F] transition-all active:scale-[0.98] hover:bg-white/90 disabled:opacity-50"
-                >
-                  {fetchStatus === "fetching" ? "Guardando…" : "Restablecer contraseña"}
-                </button>
-
-                <button
-                  type="button"
-                  onClick={() => setMode("signin")}
+                  onClick={() => {
+                    setInfo("");
+                    setGlobalError("");
+                    setMode("signin");
+                  }}
                   className="w-full text-center text-xs font-medium text-white/70 hover:text-white"
                 >
                   &larr; Volver a iniciar sesión
