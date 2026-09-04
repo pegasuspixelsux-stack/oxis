@@ -6,6 +6,9 @@ import Link from "next/link";
 import { doc, getDoc } from "firebase/firestore";
 import { db } from "@/lib/firebase";
 import { CARS_COLLECTION, type Car } from "@/lib/db/cars";
+import { useSettings } from "@/components/settings-provider";
+import { buildWhatsAppLink } from "@/lib/whatsapp";
+import { WhatsAppIcon } from "@/components/icons";
 
 const FALLBACK_IMAGE =
   "https://images.unsplash.com/photo-1555215695-3004980ad54e?auto=format&fit=crop&w=1200&q=80";
@@ -13,6 +16,7 @@ const FALLBACK_IMAGE =
 export default function CarDetailPage() {
   const params = useParams<{ id: string }>();
   const id = params?.id;
+  const { settings } = useSettings();
 
   const [car, setCar] = useState<Car | null>(null);
   const [loading, setLoading] = useState(true);
@@ -131,12 +135,26 @@ export default function CarDetailPage() {
                 <Spec label="Estado" value={car.status} />
               </div>
 
-              <Link
-                href="/#contact"
-                className="mt-6 flex w-full items-center justify-center rounded-xl bg-blue-600 px-5 py-3.5 text-sm font-semibold text-white shadow-lg shadow-blue-500/20 transition-colors hover:bg-blue-700"
-              >
-                Consultar por este vehículo
-              </Link>
+              <div className="mt-6 flex flex-col gap-2.5">
+                <a
+                  href={buildWhatsAppLink(
+                    settings.whatsappNumber,
+                    `Hola ${settings.dealershipName}, me interesa el ${car.title} (${car.price}).`
+                  )}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="flex w-full items-center justify-center gap-2 rounded-xl bg-[#25D366] px-5 py-3.5 text-sm font-semibold text-white shadow-lg shadow-[#25D366]/20 transition-colors hover:bg-[#20BD5A]"
+                >
+                  <WhatsAppIcon className="h-4 w-4" />
+                  Consultar por WhatsApp
+                </a>
+                <Link
+                  href="/#contact"
+                  className="flex w-full items-center justify-center rounded-xl border border-[#D2D2D7] px-5 py-3.5 text-sm font-semibold text-slate-700 transition-colors hover:border-blue-600 hover:text-blue-600"
+                >
+                  Consultar por formulario
+                </Link>
+              </div>
             </div>
           </div>
         ) : null}

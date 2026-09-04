@@ -9,8 +9,10 @@ import { Button } from "@/components/ui/button";
 import { PillGroup } from "@/components/ui/pill-group";
 import { FilterSelect } from "@/components/inventory/filter-select";
 import { useShowroom } from "@/components/showroom-context";
+import { useSettings } from "@/components/settings-provider";
 import { vehicles } from "@/lib/vehicles";
-import { PhoneIcon, MailIcon, PinIcon, ClockIcon, CheckCircleIcon } from "@/components/icons";
+import { buildWhatsAppLink } from "@/lib/whatsapp";
+import { PhoneIcon, MailIcon, PinIcon, ClockIcon, CheckCircleIcon, WhatsAppIcon } from "@/components/icons";
 
 const CONTACT_METHODS = ["Email", "Phone", "Text"] as const;
 const CONTACT_METHOD_LABELS: Record<(typeof CONTACT_METHODS)[number], string> = {
@@ -31,6 +33,13 @@ type Errors = Partial<Record<"name" | "email" | "phone", string>>;
 
 export function ContactSection() {
   const { selectedVehicleId } = useShowroom();
+  const { settings } = useSettings();
+  const telHref = `tel:${settings.phoneNumber.replace(/[^0-9+]/g, "")}`;
+  const mapsHref = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(settings.address)}`;
+  const whatsappHref = buildWhatsAppLink(
+    settings.whatsappNumber,
+    `Hola ${settings.dealershipName}, quiero hacer una consulta.`
+  );
 
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
@@ -288,11 +297,11 @@ export function ContactSection() {
               <ul className="flex flex-col gap-4 text-sm text-fg-muted">
                 <li className="flex items-start gap-3">
                   <PinIcon className="mt-0.5 h-4 w-4 shrink-0 text-accent" />
-                  <span>Av. Italia 3542, Montevideo, Uruguay</span>
+                  <span>{settings.address}</span>
                 </li>
                 <li className="flex items-start gap-3">
                   <PhoneIcon className="mt-0.5 h-4 w-4 shrink-0 text-accent" />
-                  <span>+598 2600 1234</span>
+                  <span>{settings.phoneNumber}</span>
                 </li>
                 <li className="flex items-start gap-3">
                   <MailIcon className="mt-0.5 h-4 w-4 shrink-0 text-accent" />
@@ -300,20 +309,24 @@ export function ContactSection() {
                 </li>
                 <li className="flex items-start gap-3">
                   <ClockIcon className="mt-0.5 h-4 w-4 shrink-0 text-accent" />
-                  <span>Lun. a Vie. 9:00–19:00 · Sáb. 9:00–18:00 · Dom. Cerrado</span>
+                  <span className="whitespace-pre-line">{settings.businessHours}</span>
                 </li>
               </ul>
 
               <div className="mt-auto flex flex-col gap-3 pt-2 sm:flex-row">
-                <Button href="tel:+59826001234" variant="secondary" className="flex-1 justify-center">
-                  Llamar Ahora
-                </Button>
                 <Button
-                  href="https://www.google.com/maps/search/?api=1&query=Av.+Italia+3542+Montevideo+Uruguay"
+                  href={whatsappHref}
                   external
                   variant="secondary"
                   className="flex-1 justify-center"
+                  icon={<WhatsAppIcon className="h-4 w-4" />}
                 >
+                  WhatsApp
+                </Button>
+                <Button href={telHref} variant="secondary" className="flex-1 justify-center">
+                  Llamar Ahora
+                </Button>
+                <Button href={mapsHref} external variant="secondary" className="flex-1 justify-center">
                   Cómo Llegar
                 </Button>
               </div>

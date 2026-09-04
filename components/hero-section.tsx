@@ -5,8 +5,11 @@ import { motion } from "motion/react";
 import { Button } from "@/components/ui/button";
 import { Container } from "@/components/ui/container";
 import { ArrowRightIcon } from "@/components/icons";
+import { useSettings } from "@/components/settings-provider";
 
 export function HeroSection() {
+  const { settings } = useSettings();
+
   return (
     <section
       id="top"
@@ -14,7 +17,7 @@ export function HeroSection() {
     >
       <div className="relative h-96 w-full overflow-hidden sm:absolute sm:inset-0 sm:h-auto">
         <Image
-          src="https://images.unsplash.com/photo-1493238792000-8113da705763"
+          src={settings.heroBannerImageUrl}
           alt="Un auto deportivo en una calle de la ciudad al atardecer"
           fill
           priority

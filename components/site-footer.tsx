@@ -1,7 +1,10 @@
+"use client";
+
 import Link from "next/link";
 import { Container } from "@/components/ui/container";
 import { PhoneIcon, MailIcon, PinIcon, InstagramIcon, FacebookIcon, XSocialIcon } from "@/components/icons";
 import { ThemeSwitcher } from "@/components/theme-switcher";
+import { useSettings } from "@/components/settings-provider";
 
 const QUICK_LINKS = [
   { href: "#top", label: "Inicio" },
@@ -10,21 +13,17 @@ const QUICK_LINKS = [
   { href: "#contact", label: "Contacto" },
 ];
 
-const HOURS = [
-  { day: "Lunes a Viernes", time: "9:00 – 19:00" },
-  { day: "Sábado", time: "9:00 – 18:00" },
-  { day: "Domingo", time: "Cerrado" },
-];
-
 export function SiteFooter() {
+  const { settings } = useSettings();
+  const telHref = `tel:${settings.phoneNumber.replace(/[^0-9+]/g, "")}`;
+  const hoursLines = settings.businessHours.split("\n").filter(Boolean);
+
   return (
     <footer className="border-t border-border bg-bg-elevated">
       <Container className="py-14 sm:py-16">
         <div className="grid grid-cols-1 gap-10 sm:grid-cols-2 lg:grid-cols-4 lg:gap-8">
           <div>
-            <p className="text-lg font-semibold tracking-tight text-fg">
-              OXIS <span className="text-logo-accent">AUTO</span>
-            </p>
+            <p className="text-lg font-semibold uppercase tracking-tight text-fg">{settings.dealershipName}</p>
             <p className="mt-3 max-w-xs text-sm leading-relaxed text-fg-muted">
               Una concesionaria de usados certificados basada en precios transparentes,
               inspecciones rigurosas y garantías que podés exigirnos.
@@ -78,12 +77,17 @@ export function SiteFooter() {
               Horario de Atención
             </h3>
             <ul className="mt-4 flex flex-col gap-2.5 text-sm text-fg-muted">
-              {HOURS.map((row) => (
-                <li key={row.day} className="flex justify-between gap-4">
-                  <span>{row.day}</span>
-                  <span className="font-mono text-fg">{row.time}</span>
-                </li>
-              ))}
+              {hoursLines.map((line, i) => {
+                const colonIndex = line.indexOf(":");
+                const day = colonIndex === -1 ? line.trim() : line.slice(0, colonIndex).trim();
+                const time = colonIndex === -1 ? "" : line.slice(colonIndex + 1).trim();
+                return (
+                  <li key={i} className="flex justify-between gap-4">
+                    <span>{day}</span>
+                    {time && <span className="font-mono text-fg">{time}</span>}
+                  </li>
+                );
+              })}
             </ul>
           </div>
 
@@ -94,12 +98,12 @@ export function SiteFooter() {
             <ul className="mt-4 flex flex-col gap-3 text-sm text-fg-muted">
               <li className="flex items-start gap-2.5">
                 <PinIcon className="mt-0.5 h-4 w-4 shrink-0 text-accent" />
-                <span>Av. Italia 3542, Montevideo, Uruguay</span>
+                <span>{settings.address}</span>
               </li>
               <li className="flex items-start gap-2.5">
                 <PhoneIcon className="mt-0.5 h-4 w-4 shrink-0 text-accent" />
-                <a href="tel:+59826001234" className="hover:text-fg">
-                  +598 2600 1234
+                <a href={telHref} className="hover:text-fg">
+                  {settings.phoneNumber}
                 </a>
               </li>
               <li className="flex items-start gap-2.5">
@@ -113,7 +117,10 @@ export function SiteFooter() {
         </div>
 
         <div className="mt-12 flex flex-col gap-2 border-t border-border pt-6 text-xs text-fg-subtle sm:flex-row sm:items-center sm:justify-between">
-          <p>&copy; {new Date().getFullYear()} OXIS Auto. Todos los derechos reservados.</p>
+          <p>
+            &copy; {new Date().getFullYear()} {settings.dealershipName}. Todos los derechos
+            reservados.
+          </p>
           <p className="flex items-center gap-1">
             <span>
               Imágenes de vehículos vía{" "}

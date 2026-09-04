@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useEffect, useState } from "react";
 import { AnimatePresence, motion } from "motion/react";
 import { PhoneIcon, MenuIcon, CloseIcon } from "@/components/icons";
+import { useSettings } from "@/components/settings-provider";
 
 const NAV_LINKS = [
   { href: "#inventory", label: "Inventario" },
@@ -13,6 +14,9 @@ const NAV_LINKS = [
 ];
 
 export function SiteHeader() {
+  const { settings } = useSettings();
+  const telHref = `tel:${settings.phoneNumber.replace(/[^0-9+]/g, "")}`;
+  const [nameFirst, ...nameRest] = settings.dealershipName.split(" ");
   const [scrolled, setScrolled] = useState(false);
   const [open, setOpen] = useState(false);
 
@@ -47,10 +51,10 @@ export function SiteHeader() {
       <div className="mx-auto flex h-16 max-w-7xl items-center justify-between px-4 sm:px-6 lg:px-8">
         <Link
           href="#top"
-          className="text-lg font-semibold tracking-tight text-fg"
+          className="text-lg font-semibold uppercase tracking-tight text-fg"
           onClick={() => setOpen(false)}
         >
-          OXIS <span className="text-logo-accent">AUTO</span>
+          {nameFirst} {nameRest.length > 0 && <span className="text-logo-accent">{nameRest.join(" ")}</span>}
         </Link>
 
         <nav className="hidden md:flex items-center gap-8 text-sm font-medium text-fg-muted">
@@ -63,11 +67,11 @@ export function SiteHeader() {
 
         <div className="flex items-center gap-3">
           <a
-            href="tel:+59826001234"
+            href={telHref}
             className="hidden sm:inline-flex items-center gap-2 text-xs font-mono uppercase tracking-wider text-fg-muted transition-colors hover:text-accent"
           >
             <PhoneIcon className="h-4 w-4" />
-            +598 2600 1234
+            {settings.phoneNumber}
           </a>
           <button
             type="button"
@@ -102,11 +106,11 @@ export function SiteHeader() {
                 </Link>
               ))}
               <a
-                href="tel:+59826001234"
+                href={telHref}
                 className="mt-2 inline-flex items-center gap-2 rounded-lg px-3 py-3 text-base font-medium text-accent"
               >
                 <PhoneIcon className="h-4 w-4" />
-                Llamar +598 2600 1234
+                Llamar {settings.phoneNumber}
               </a>
             </div>
           </motion.nav>
