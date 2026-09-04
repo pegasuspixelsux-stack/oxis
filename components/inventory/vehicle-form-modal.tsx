@@ -5,7 +5,7 @@ import { AnimatePresence, motion } from "motion/react";
 import { addDoc, collection, doc, serverTimestamp, updateDoc } from "firebase/firestore";
 import { getDownloadURL, ref, uploadBytesResumable } from "firebase/storage";
 import { db, storage } from "@/lib/firebase";
-import { CARS_COLLECTION, type Car, type CarSeed } from "@/lib/db/cars";
+import { CARS_COLLECTION, COMMON_VEHICLE_FEATURES, type Car, type CarSeed } from "@/lib/db/cars";
 import { CloseIcon, UploadIcon } from "@/components/icons";
 import { PhotoGuideDiagram } from "@/components/inventory/photo-guide-diagram";
 
@@ -18,6 +18,8 @@ type FormState = {
   mileage: string;
   drivetrain: string;
   transmission: string;
+  description: string;
+  features: string[];
   images: string[];
 };
 
@@ -35,6 +37,8 @@ const EMPTY_FORM: FormState = {
   mileage: "",
   drivetrain: "",
   transmission: "Automatic",
+  description: "",
+  features: [],
   images: [],
 };
 
@@ -49,6 +53,8 @@ function carToForm(car: Car): FormState {
     mileage: car.mileage ?? "",
     drivetrain: car.drivetrain ?? "",
     transmission: car.transmission ?? "Automatic",
+    description: car.description ?? "",
+    features: car.features ?? [],
     images,
   };
 }
@@ -179,6 +185,15 @@ export function VehicleFormModal({
     setForm((prev) => ({ ...prev, [key]: value }));
   }
 
+  function toggleFeature(feature: string) {
+    setForm((prev) => ({
+      ...prev,
+      features: prev.features.includes(feature)
+        ? prev.features.filter((f) => f !== feature)
+        : [...prev.features, feature],
+    }));
+  }
+
   function removeImage(index: number) {
     setForm((prev) => ({ ...prev, images: prev.images.filter((_, i) => i !== index) }));
   }
@@ -276,6 +291,8 @@ export function VehicleFormModal({
       mileage: form.mileage.trim(),
       drivetrain: form.drivetrain.trim(),
       transmission: form.transmission.trim(),
+      description: form.description.trim(),
+      features: form.features,
       status: car?.status ?? "Published",
       img: images[0] ?? "",
       images,
@@ -439,6 +456,49 @@ export function VehicleFormModal({
                   <option value="Automatic">Automática</option>
                   <option value="Manual">Manual</option>
                 </select>
+              </div>
+
+              <div>
+                <label className={labelClasses}>Descripción</label>
+                <textarea
+                  rows={4}
+                  placeholder="Contanos el estado del vehículo, historial de service, detalles que lo destaquen…"
+                  value={form.description}
+                  onChange={(e) => update("description", e.target.value)}
+                  className={`${inputClasses} resize-none`}
+                />
+              </div>
+
+              <div>
+                <div className="flex items-center justify-between">
+                  <label className={labelClasses}>Equipamiento</label>
+                  <span className="text-[11px] font-medium text-[#8E8E93]">
+                    {form.features.length} seleccionado{form.features.length === 1 ? "" : "s"}
+                  </span>
+                </div>
+                <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
+                  {COMMON_VEHICLE_FEATURES.map((feature) => {
+                    const checked = form.features.includes(feature);
+                    return (
+                      <label
+                        key={feature}
+                        className={`flex cursor-pointer items-center gap-2 rounded-xl border px-3 py-2 text-xs font-medium transition-colors ${
+                          checked
+                            ? "border-[#0071E3] bg-[#0071E3]/5 text-[#0071E3]"
+                            : "border-black/10 bg-[#F5F5F7] text-[#6E6E73] hover:border-black/20"
+                        }`}
+                      >
+                        <input
+                          type="checkbox"
+                          checked={checked}
+                          onChange={() => toggleFeature(feature)}
+                          className="h-3.5 w-3.5 shrink-0 accent-[#0071E3]"
+                        />
+                        {feature}
+                      </label>
+                    );
+                  })}
+                </div>
               </div>
 
               <div className="space-y-3 rounded-2xl border border-black/[0.06] bg-[#F5F5F7]/60 p-4">

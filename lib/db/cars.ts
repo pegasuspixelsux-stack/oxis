@@ -25,7 +25,29 @@ export type CarSeed = {
   status: "Published";
   img: string;
   images?: string[];
+  description?: string;
+  features?: string[];
 };
+
+// Curated checklist offered in the dashboard's add/edit modal — an agent
+// toggles whichever apply rather than typing free text, so a vehicle's
+// features stay consistent and filterable across listings.
+export const COMMON_VEHICLE_FEATURES = [
+  "Bluetooth",
+  "Apple CarPlay / Android Auto",
+  "Cámara de reversa",
+  "Cámara 360°",
+  "Sensores de estacionamiento",
+  "Techo solar",
+  "Asientos de cuero",
+  "Asientos calefaccionados",
+  "Navegación GPS",
+  "Control de crucero adaptativo",
+  "Llantas de aleación",
+  "Encendido sin llave",
+  "Tercera fila de asientos",
+  "Enganche para remolque",
+] as const;
 
 // A `cars` document as read back from Firestore, including its id. The
 // canonical shape shared by the dashboard (create/edit) and the public
