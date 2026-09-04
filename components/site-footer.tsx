@@ -114,16 +114,22 @@ export function SiteFooter() {
 
         <div className="mt-12 flex flex-col gap-2 border-t border-border pt-6 text-xs text-fg-subtle sm:flex-row sm:items-center sm:justify-between">
           <p>&copy; {new Date().getFullYear()} OXIS Auto. Todos los derechos reservados.</p>
-          <p>
-            Imágenes de vehículos vía{" "}
-            <a
-              href="https://unsplash.com"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="underline underline-offset-2 hover:text-fg-muted"
-            >
-              Unsplash
-            </a>
+          <p className="flex items-center gap-1">
+            <span>
+              Imágenes de vehículos vía{" "}
+              <a
+                href="https://unsplash.com"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="underline underline-offset-2 hover:text-fg-muted"
+              >
+                Unsplash
+              </a>
+            </span>
+            <span aria-hidden="true">·</span>
+            <Link href="/login" className="underline underline-offset-2 hover:text-fg-muted">
+              Acceso interno
+            </Link>
           </p>
         </div>
       </Container>

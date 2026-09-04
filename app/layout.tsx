@@ -1,5 +1,7 @@
 import type { Metadata, Viewport } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
+import { ClerkProvider } from "@clerk/nextjs";
+import { esUY } from "@clerk/localizations";
 import { MotionProvider } from "@/components/motion-provider";
 import "./globals.css";
 
@@ -45,7 +47,9 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
         <script dangerouslySetInnerHTML={{ __html: THEME_INIT_SCRIPT }} />
       </head>
       <body className="min-h-full flex flex-col bg-bg text-fg">
-        <MotionProvider>{children}</MotionProvider>
+        <ClerkProvider localization={esUY}>
+          <MotionProvider>{children}</MotionProvider>
+        </ClerkProvider>
       </body>
     </html>
   );

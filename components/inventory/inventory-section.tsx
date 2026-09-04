@@ -9,7 +9,6 @@ import { VehicleCard } from "@/components/inventory/vehicle-card";
 import { useShowroom } from "@/components/showroom-context";
 import { vehicles, makes, bodyStyles, bodyStyleLabels, priceCeilings, formatPrice } from "@/lib/vehicles";
 import { AlertIcon, ChevronDownIcon } from "@/components/icons";
-import { TrustStats } from "@/components/trust-stats";
 
 const ALL = "all";
 
@@ -131,10 +130,6 @@ export function InventorySection() {
               </motion.div>
             )}
           </AnimatePresence>
-        </Reveal>
-
-        <Reveal delay={0.1}>
-          <TrustStats className="mt-10 border-y border-border py-7" />
         </Reveal>
 
         <div className="mt-10">

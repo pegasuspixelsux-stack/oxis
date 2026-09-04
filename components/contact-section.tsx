@@ -267,7 +267,7 @@ export function ContactSection() {
 
           <Reveal delay={0.1}>
             <div className="flex h-full flex-col overflow-hidden rounded-2xl border border-border bg-bg-elevated">
-              <div className="relative h-40 w-full">
+              <div className="relative h-64 w-full">
                 <Image
                   src="https://images.unsplash.com/photo-1518987048-93e29699e79a"
                   alt="Showroom de OXIS Auto de noche"
