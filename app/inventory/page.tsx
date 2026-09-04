@@ -5,8 +5,11 @@ import Link from "next/link";
 import { collection, getDocs, query, orderBy } from "firebase/firestore";
 import { db } from "@/lib/firebase";
 import { CARS_COLLECTION, type Car } from "@/lib/db/cars";
+import { useSettings } from "@/components/settings-provider";
+import { buildWhatsAppLink } from "@/lib/whatsapp";
 
 export default function PublicInventoryPage() {
+  const { settings } = useSettings();
   const [cars, setCars] = useState<Car[]>([]);
   const [loading, setLoading] = useState(true);
 
@@ -117,7 +120,7 @@ export default function PublicInventoryPage() {
   };
 
   return (
-    <div className="min-h-screen bg-[#FBFBFD] text-[#1D1D1F] font-sans pb-24">
+    <div className="min-h-screen bg-[#FBFBFD] text-[#1D1D1F] font-sans">
       {/* Navigation Header */}
       <header className="sticky top-0 z-40 bg-[#FBFBFD]/80 backdrop-blur-xl border-b border-[#D2D2D7]/40">
         <div className="max-w-7xl mx-auto px-6 h-16 flex items-center justify-between">
@@ -461,8 +464,98 @@ export default function PublicInventoryPage() {
             )}
           </div>
         </div>
-
       </div>
+
+      {/* Footer — same light/editorial system as the rest of this page,
+          not the dark marketing-site SiteFooter, which would clash here. */}
+      <footer className="mt-12 border-t border-[#D2D2D7]/60 bg-white">
+        <div className="max-w-7xl mx-auto px-6 py-12 grid grid-cols-1 gap-10 sm:grid-cols-2 lg:grid-cols-4">
+          <div>
+            <Link href="/" className="text-sm font-bold tracking-tight text-[#1D1D1F]">
+              OXIS<span className="text-blue-600">.</span>{" "}
+              <span className="text-slate-400 font-normal">Showroom</span>
+            </Link>
+            <p className="mt-3 text-xs leading-relaxed text-slate-500 max-w-xs">
+              Vehículos usados certificados, inspeccionados a fondo y respaldados por una garantía
+              de devolución de 7 días.
+            </p>
+          </div>
+
+          <div>
+            <h3 className="text-[11px] font-bold uppercase tracking-wider text-slate-400">
+              Navegación
+            </h3>
+            <ul className="mt-4 space-y-2.5 text-xs">
+              <li>
+                <Link href="/" className="text-slate-600 hover:text-blue-600 transition-colors">
+                  Inicio
+                </Link>
+              </li>
+              <li>
+                <Link href="/inventory" className="text-slate-600 hover:text-blue-600 transition-colors">
+                  Inventario
+                </Link>
+              </li>
+              <li>
+                <Link href="/#contact" className="text-slate-600 hover:text-blue-600 transition-colors">
+                  Contacto
+                </Link>
+              </li>
+              <li>
+                <Link href="/dashboard" className="text-slate-600 hover:text-blue-600 transition-colors">
+                  Control Panel
+                </Link>
+              </li>
+            </ul>
+          </div>
+
+          <div>
+            <h3 className="text-[11px] font-bold uppercase tracking-wider text-slate-400">
+              Horario de Atención
+            </h3>
+            <p className="mt-4 text-xs leading-relaxed text-slate-600 whitespace-pre-line">
+              {settings.businessHours}
+            </p>
+          </div>
+
+          <div>
+            <h3 className="text-[11px] font-bold uppercase tracking-wider text-slate-400">
+              Visitanos
+            </h3>
+            <ul className="mt-4 space-y-2.5 text-xs text-slate-600">
+              <li>{settings.address}</li>
+              <li>
+                <a
+                  href={`tel:${settings.phoneNumber.replace(/[^0-9+]/g, "")}`}
+                  className="hover:text-blue-600 transition-colors"
+                >
+                  {settings.phoneNumber}
+                </a>
+              </li>
+              <li>
+                <a
+                  href={buildWhatsAppLink(
+                    settings.whatsappNumber,
+                    `Hola ${settings.dealershipName}, quiero hacer una consulta.`
+                  )}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-emerald-600 font-semibold hover:text-emerald-700 transition-colors"
+                >
+                  WhatsApp
+                </a>
+              </li>
+            </ul>
+          </div>
+        </div>
+
+        <div className="border-t border-[#D2D2D7]/60">
+          <div className="max-w-7xl mx-auto px-6 py-5 text-[11px] text-slate-400">
+            &copy; {new Date().getFullYear()} {settings.dealershipName}. Todos los derechos
+            reservados.
+          </div>
+        </div>
+      </footer>
     </div>
   );
 }
