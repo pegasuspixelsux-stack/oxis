@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { adminAuth, adminDb, SESSION_COOKIE_NAME } from "@/lib/firebase-admin";
-import { seedCars } from "@/lib/db/cars";
+import { seedCars } from "@/lib/db/seed-cars";
 
 // Admin-only trigger for the `cars` collection seed. Gated behind the same
 // session cookie proxy.ts uses for /dashboard, so only an authenticated

@@ -4,21 +4,7 @@ import { useEffect, useMemo, useState, type FormEvent } from "react";
 import Link from "next/link";
 import { collection, getDocs, query, orderBy } from "firebase/firestore";
 import { db } from "@/lib/firebase";
-
-type Car = {
-  id: string;
-  title: string;
-  price: string;
-  mileage: string;
-  drivetrain: string;
-  transmission: string;
-  bodyStyle: string;
-  make: string;
-  year: number;
-  status: string;
-  img?: string;
-  images?: string[];
-};
+import { CARS_COLLECTION, type Car } from "@/lib/db/cars";
 
 export default function PublicInventoryPage() {
   const [cars, setCars] = useState<Car[]>([]);
@@ -51,7 +37,7 @@ export default function PublicInventoryPage() {
   useEffect(() => {
     async function fetchInventory() {
       try {
-        const q = query(collection(db, "cars"), orderBy("createdAt", "desc"));
+        const q = query(collection(db, CARS_COLLECTION), orderBy("createdAt", "desc"));
         const querySnapshot = await getDocs(q);
         const list = querySnapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() }) as Car);
         setCars(list);

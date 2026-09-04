@@ -1,15 +1,11 @@
-// Portable Firestore seed logic for the `cars` collection.
-//
-// Deliberately has NO import of "server-only" or "@/lib/firebase-admin" —
-// it takes a `Firestore` instance as a parameter instead of constructing
-// one itself. That keeps this module callable from two places:
-//   1. app/api/admin/seed-cars/route.ts (inside the Next.js server, using adminDb())
-//   2. scripts/seed-cars.ts (a plain `node` CLI script, which can't import
-//      "server-only"-guarded modules since it isn't running inside Next's
-//      server bundler where that condition is satisfied)
-
-import type { Firestore } from "firebase-admin/firestore";
-import { FieldValue } from "firebase-admin/firestore";
+// Shared `cars` collection types and seed data. Zero imports of
+// "server-only" or "firebase-admin" (not even type-only) — client
+// components (the dashboard and public inventory pages, the vehicle
+// form modal) import this module directly for `Car`/`CarSeed`/
+// `CARS_COLLECTION`, and bundling any firebase-admin code into a
+// client bundle fails to build (it pulls in Node-only internals like
+// `tls`/`net`/gRPC). The Admin-SDK-dependent seeding logic that used
+// to live here now lives in ./seed-cars.ts instead.
 
 export const CARS_COLLECTION = "cars";
 
@@ -17,14 +13,25 @@ export type CarSeed = {
   title: string;
   price: string;
   mileage: string;
-  drivetrain: "AWD" | "Quattro" | "4WD" | "RWD" | "FWD";
-  transmission: "Automatic" | "Manual";
-  bodyStyle: "Sedan" | "Coupe" | "SUV" | "Hatchback";
+  // Free-form strings, not enums — Firestore doesn't enforce a schema, and
+  // the dashboard's add/edit form (components/inventory/vehicle-form-modal.tsx)
+  // deliberately lets an agent type any value (e.g. a body style like "Wagon"
+  // or a drivetrain label like "Quattro" that a fixed union would exclude).
+  drivetrain: string;
+  transmission: string;
+  bodyStyle: string;
   make: string;
   year: number;
   status: "Published";
   img: string;
+  images?: string[];
 };
+
+// A `cars` document as read back from Firestore, including its id. The
+// canonical shape shared by the dashboard (create/edit) and the public
+// inventory pages, so they don't each redeclare a slightly different
+// local type.
+export type Car = CarSeed & { id: string };
 
 // 12 fully detailed listings. Photos are existing Unsplash car photography —
 // the first 8 URLs already ship in lib/vehicles.ts; the remaining 4 (Audi,
@@ -177,33 +184,3 @@ export const CAR_SEED_DATA: CarSeed[] = [
     img: "https://images.unsplash.com/photo-1594502184342-2e12f877aa73",
   },
 ];
-
-export type SeedResult =
-  | { seeded: true; count: number }
-  | { seeded: false; count: number; reason: "already-populated" };
-
-/**
- * Idempotent seed: only writes the 12 CAR_SEED_DATA documents if the `cars`
- * collection is currently empty. Safe to run on every deploy/boot — re-runs
- * are a no-op once the collection has at least one document.
- */
-export async function seedCars(db: Firestore): Promise<SeedResult> {
-  const collectionRef = db.collection(CARS_COLLECTION);
-
-  const existing = await collectionRef.limit(1).get();
-  if (!existing.empty) {
-    return { seeded: false, count: 0, reason: "already-populated" };
-  }
-
-  const batch = db.batch();
-  for (const car of CAR_SEED_DATA) {
-    const docRef = collectionRef.doc();
-    batch.set(docRef, {
-      ...car,
-      createdAt: FieldValue.serverTimestamp(),
-    });
-  }
-  await batch.commit();
-
-  return { seeded: true, count: CAR_SEED_DATA.length };
-}

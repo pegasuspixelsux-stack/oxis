@@ -10,7 +10,8 @@
 
 import { cert, initializeApp } from "firebase-admin/app";
 import { getFirestore } from "firebase-admin/firestore";
-import { seedCars, CAR_SEED_DATA } from "../lib/db/cars.ts";
+import { seedCars } from "../lib/db/seed-cars.ts";
+import { CAR_SEED_DATA } from "../lib/db/cars.ts";
 
 function loadServiceAccount(): Record<string, unknown> {
   const raw = process.env.FIREBASE_SERVICE_ACCOUNT_KEY;
