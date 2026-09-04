@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState, type FormEvent } from "react";
+import { useEffect, useMemo, useState, type FormEvent } from "react";
 import Link from "next/link";
 import { collection, getDocs, query, orderBy } from "firebase/firestore";
 import { db } from "@/lib/firebase";
@@ -64,6 +64,41 @@ export default function PublicInventoryPage() {
     fetchInventory();
   }, []);
 
+  // Filter options and price ceiling are derived from whatever is actually in
+  // the collection, instead of a hardcoded list — a hardcoded Make/Body Style
+  // list silently excludes any make or body style that isn't in that list
+  // (e.g. Tesla, Volkswagen, Hatchback were unselectable), and a hardcoded
+  // price ceiling below the priciest listing makes that listing unreachable
+  // no matter where the slider is set.
+  const availableMakes = useMemo(
+    () => Array.from(new Set(cars.map((car) => car.make).filter(Boolean))).sort(),
+    [cars]
+  );
+  const availableBodyStyles = useMemo(
+    () => Array.from(new Set(cars.map((car) => car.bodyStyle).filter(Boolean))).sort(),
+    [cars]
+  );
+  const priceCeiling = useMemo(() => {
+    const prices = cars
+      .map((car) => parseInt(String(car.price).replace(/[^0-9]/g, ""), 10))
+      .filter((price) => Number.isFinite(price) && price > 0);
+    return prices.length ? Math.ceil(Math.max(...prices) / 10000) * 10000 : 100000;
+  }, [cars]);
+
+  // Default the slider to the real ceiling once data arrives, so every
+  // listing is included until the shopper narrows the range themselves.
+  useEffect(() => {
+    if (cars.length > 0) setMaxPrice(priceCeiling);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [cars.length]);
+
+  // Jump back to page 1 whenever the filter criteria change — otherwise
+  // narrowing the results while on page 2+ can strand the shopper on a
+  // now-empty page that still says "No vehicles match your criteria".
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [searchTerm, selectedMake, selectedBodyStyle, maxPrice]);
+
   // Filter logic
   const filteredCars = cars.filter((car) => {
     const matchesSearch =
@@ -73,9 +108,8 @@ export default function PublicInventoryPage() {
     const matchesBody = selectedBodyStyle === "All" || car.bodyStyle === selectedBodyStyle;
 
     // Parse price string like "$28,995" to number
-    const numericPrice =
-      typeof car.price === "string" ? parseInt(car.price.replace(/[^0-9]/g, ""), 10) : 30000;
-    const matchesPrice = numericPrice <= maxPrice;
+    const numericPrice = parseInt(String(car.price).replace(/[^0-9]/g, ""), 10);
+    const matchesPrice = !Number.isFinite(numericPrice) || numericPrice <= maxPrice;
 
     return matchesSearch && matchesMake && matchesBody && matchesPrice;
   });
@@ -153,11 +187,11 @@ export default function PublicInventoryPage() {
                   className="w-full px-3.5 py-2.5 rounded-xl bg-slate-50 border border-slate-200 text-xs text-slate-900 focus:outline-none focus:ring-2 focus:ring-blue-500"
                 >
                   <option value="All">All Makes</option>
-                  <option value="BMW">BMW</option>
-                  <option value="Audi">Audi</option>
-                  <option value="Ford">Ford</option>
-                  <option value="Porsche">Porsche</option>
-                  <option value="Mercedes-Benz">Mercedes-Benz</option>
+                  {availableMakes.map((m) => (
+                    <option key={m} value={m}>
+                      {m}
+                    </option>
+                  ))}
                 </select>
               </div>
 
@@ -170,10 +204,11 @@ export default function PublicInventoryPage() {
                   className="w-full px-3.5 py-2.5 rounded-xl bg-slate-50 border border-slate-200 text-xs text-slate-900 focus:outline-none focus:ring-2 focus:ring-blue-500"
                 >
                   <option value="All">All Body Styles</option>
-                  <option value="Sedan">Sedan</option>
-                  <option value="SUV">SUV</option>
-                  <option value="Truck">Truck</option>
-                  <option value="Coupe">Coupe</option>
+                  {availableBodyStyles.map((b) => (
+                    <option key={b} value={b}>
+                      {b}
+                    </option>
+                  ))}
                 </select>
               </div>
 
@@ -186,7 +221,7 @@ export default function PublicInventoryPage() {
                 <input
                   type="range"
                   min="10000"
-                  max="100000"
+                  max={priceCeiling}
                   step="5000"
                   value={maxPrice}
                   onChange={(e) => setMaxPrice(Number(e.target.value))}
@@ -199,7 +234,7 @@ export default function PublicInventoryPage() {
                   setSearchTerm("");
                   setSelectedMake("All");
                   setSelectedBodyStyle("All");
-                  setMaxPrice(100000);
+                  setMaxPrice(priceCeiling);
                 }}
                 className="w-full py-2 rounded-xl border border-slate-200 text-xs font-semibold text-slate-600 hover:bg-slate-50 transition-colors"
               >
