@@ -23,7 +23,7 @@ export function SiteFooter() {
         <div className="grid grid-cols-1 gap-10 sm:grid-cols-2 lg:grid-cols-4 lg:gap-8">
           <div>
             <p className="text-lg font-semibold tracking-tight text-fg">
-              OXIS <span className="text-accent">AUTO</span>
+              OXIS <span className="text-logo-accent">AUTO</span>
             </p>
             <p className="mt-3 max-w-xs text-sm leading-relaxed text-fg-muted">
               Una concesionaria de usados certificados basada en precios transparentes,

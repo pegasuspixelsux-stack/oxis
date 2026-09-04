@@ -50,7 +50,7 @@ export function SiteHeader() {
           className="text-lg font-semibold tracking-tight text-fg"
           onClick={() => setOpen(false)}
         >
-          OXIS <span className="text-accent">AUTO</span>
+          OXIS <span className="text-logo-accent">AUTO</span>
         </Link>
 
         <nav className="hidden md:flex items-center gap-8 text-sm font-medium text-fg-muted">

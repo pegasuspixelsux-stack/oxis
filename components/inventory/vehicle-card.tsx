@@ -1,9 +1,9 @@
 import Image from "next/image";
 import { motion } from "motion/react";
 import type { Vehicle } from "@/lib/vehicles";
-import { formatPrice, formatMileage, fuelTypeLabels, transmissionLabels } from "@/lib/vehicles";
+import { formatPrice, fuelTypeLabels, transmissionLabels } from "@/lib/vehicles";
 import { estimateListingPayment } from "@/lib/finance";
-import { GaugeIcon, FuelIcon, TransmissionIcon, DrivetrainIcon, ArrowRightIcon } from "@/components/icons";
+import { FuelIcon, TransmissionIcon, DrivetrainIcon, ArrowRightIcon } from "@/components/icons";
 
 export function VehicleCard({
   vehicle,
@@ -13,7 +13,6 @@ export function VehicleCard({
   onInquire: (id: string) => void;
 }) {
   const specs = [
-    { icon: GaugeIcon, value: formatMileage(vehicle.mileage) },
     { icon: FuelIcon, value: fuelTypeLabels[vehicle.fuelType] },
     { icon: TransmissionIcon, value: transmissionLabels[vehicle.transmission] },
     { icon: DrivetrainIcon, value: vehicle.drivetrain },
@@ -51,7 +50,7 @@ export function VehicleCard({
           {vehicle.trim} &middot; {vehicle.exteriorColor}
         </p>
 
-        <div className="mt-4 grid grid-cols-2 gap-x-3 gap-y-2">
+        <div className="mt-4 grid grid-cols-3 gap-x-3 gap-y-2">
           {specs.map((spec) => (
             <div key={spec.value} className="flex items-center gap-1.5 text-xs text-fg-muted">
               <spec.icon className="h-3.5 w-3.5 shrink-0 text-fg-subtle" />

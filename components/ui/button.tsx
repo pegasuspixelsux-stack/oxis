@@ -58,7 +58,7 @@ export function Button(props: ButtonAsButton | ButtonAsLink) {
       <motion.span
         whileTap={{ scale: 0.97 }}
         whileHover={{ scale: 1.015 }}
-        className={`inline-block ${className}`}
+        className={`inline-flex justify-center ${className}`}
       >
         <Link
           href={href}

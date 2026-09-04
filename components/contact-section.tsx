@@ -1,6 +1,7 @@
 "use client";
 
 import { useMemo, useState, type FormEvent } from "react";
+import Image from "next/image";
 import { motion, AnimatePresence } from "motion/react";
 import { Container } from "@/components/ui/container";
 import { Reveal } from "@/components/reveal";
@@ -265,7 +266,18 @@ export function ContactSection() {
           </Reveal>
 
           <Reveal delay={0.1}>
-            <div className="flex h-full flex-col gap-6 rounded-2xl border border-border bg-bg-elevated p-6 sm:p-8">
+            <div className="flex h-full flex-col overflow-hidden rounded-2xl border border-border bg-bg-elevated">
+              <div className="relative h-40 w-full">
+                <Image
+                  src="https://images.unsplash.com/photo-1518987048-93e29699e79a"
+                  alt="Showroom de OXIS Auto de noche"
+                  fill
+                  sizes="(min-width: 1024px) 33vw, 100vw"
+                  className="object-cover"
+                />
+              </div>
+
+              <div className="flex flex-1 flex-col gap-6 p-6 sm:p-8">
               <div>
                 <h3 className="text-lg font-medium text-fg">Visitá el showroom</h3>
                 <p className="mt-1 text-sm text-fg-muted">
@@ -304,6 +316,7 @@ export function ContactSection() {
                 >
                   Cómo Llegar
                 </Button>
+              </div>
               </div>
             </div>
           </Reveal>
