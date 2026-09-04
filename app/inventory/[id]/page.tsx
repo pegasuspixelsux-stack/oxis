@@ -159,14 +159,6 @@ export default function EditorialCarDetailPage() {
             >
               Índice
             </Link>
-            <a
-              href={whatsappUrl}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="rounded-full bg-slate-900 px-4 py-2 text-[11px] uppercase tracking-wider text-white shadow-sm transition-all hover:bg-slate-800"
-            >
-              Mesa de conserjería
-            </a>
           </div>
         </div>
       </header>
