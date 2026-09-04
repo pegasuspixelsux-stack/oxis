@@ -1,6 +1,7 @@
 "use client";
 
 import { useMemo, useState } from "react";
+import Link from "next/link";
 import { AnimatePresence, motion } from "motion/react";
 import { Container } from "@/components/ui/container";
 import { Reveal } from "@/components/reveal";
@@ -8,9 +9,10 @@ import { FilterSelect } from "@/components/inventory/filter-select";
 import { VehicleCard } from "@/components/inventory/vehicle-card";
 import { useShowroom } from "@/components/showroom-context";
 import { vehicles, makes, bodyStyles, bodyStyleLabels, priceCeilings, formatPrice } from "@/lib/vehicles";
-import { AlertIcon, ChevronDownIcon } from "@/components/icons";
+import { AlertIcon, ChevronDownIcon, ArrowRightIcon } from "@/components/icons";
 
 const ALL = "all";
+const HOMEPAGE_DISPLAY_LIMIT = 6;
 
 export function InventorySection() {
   const [make, setMake] = useState(ALL);
@@ -30,6 +32,8 @@ export function InventorySection() {
 
   const activeCount = [make, bodyStyle, maxPrice].filter((v) => v !== ALL).length;
   const filtersActive = activeCount > 0;
+  const displayed = filtered.slice(0, HOMEPAGE_DISPLAY_LIMIT);
+  const hasMore = filtered.length > HOMEPAGE_DISPLAY_LIMIT;
 
   const handleInquire = (id: string) => {
     selectVehicle(id);
@@ -133,10 +137,10 @@ export function InventorySection() {
         </Reveal>
 
         <div className="mt-10">
-          {filtered.length > 0 ? (
+          {displayed.length > 0 ? (
             <motion.div layout className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
               <AnimatePresence mode="popLayout">
-                {filtered.map((vehicle) => (
+                {displayed.map((vehicle) => (
                   <VehicleCard key={vehicle.id} vehicle={vehicle} onInquire={handleInquire} />
                 ))}
               </AnimatePresence>
@@ -155,6 +159,20 @@ export function InventorySection() {
             </div>
           )}
         </div>
+
+        <Reveal delay={0.1}>
+          <div className="mt-10 flex justify-center">
+            <Link
+              href="/inventory"
+              className="inline-flex items-center gap-2 rounded-xl border border-border-strong bg-bg-elevated px-5 py-3 text-sm font-medium text-fg transition-colors hover:border-accent hover:text-accent"
+            >
+              {hasMore
+                ? `Ver los ${filtered.length} vehículos del inventario completo`
+                : "Ver inventario completo"}
+              <ArrowRightIcon className="h-3.5 w-3.5" />
+            </Link>
+          </div>
+        </Reveal>
 
         {filtered.length > 0 && (
           <p className="mt-8 text-xs text-fg-subtle">
