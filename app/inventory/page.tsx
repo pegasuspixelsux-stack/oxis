@@ -18,9 +18,6 @@ export default function PublicInventoryPage() {
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 12; // 3x4 grid specification
 
-  // Bottom Tabs state
-  const [activeTab, setActiveTab] = useState<"finance" | "trade">("finance");
-
   // Finance Calculator state
   const [carPrice, setCarPrice] = useState(35000);
   const [downPayment, setDownPayment] = useState(7000);
@@ -148,8 +145,8 @@ export default function PublicInventoryPage() {
         {/* Main Layout: Advanced Search on Left, 3-Column Grid on Right */}
         <div className="grid grid-cols-1 lg:grid-cols-4 gap-8 mb-20">
           {/* Left Column: Advanced Search & Filters */}
-          <div className="lg:col-span-1 space-y-6">
-            <div className="bg-white p-6 rounded-2xl border border-[#D2D2D7]/60 shadow-xs space-y-5 sticky top-24">
+          <div className="lg:col-span-1 space-y-6 sticky top-24">
+            <div className="bg-white p-6 rounded-2xl border border-[#D2D2D7]/60 shadow-xs space-y-5">
               <h3 className="text-xs font-bold uppercase tracking-wider text-slate-500">Advanced Search</h3>
 
               {/* Keyword Search */}
@@ -226,6 +223,158 @@ export default function PublicInventoryPage() {
               >
                 Reset Filters
               </button>
+            </div>
+
+            {/* Finance Calculator — compact sidebar variant, same card
+                treatment as Advanced Search above it. */}
+            <div className="bg-white p-6 rounded-2xl border border-[#D2D2D7]/60 shadow-xs space-y-5">
+              <div>
+                <h3 className="text-xs font-bold uppercase tracking-wider text-slate-500">
+                  Finance Calculator
+                </h3>
+                <p className="mt-1 text-[11px] text-slate-400">Estimate your monthly payment.</p>
+              </div>
+
+              <div className="space-y-4">
+                <div>
+                  <div className="flex justify-between text-[11px] font-semibold text-slate-600 mb-1">
+                    <span>Vehicle Price</span>
+                    <span>${carPrice.toLocaleString()}</span>
+                  </div>
+                  <input
+                    type="range"
+                    min="15000"
+                    max="90000"
+                    step="1000"
+                    value={carPrice}
+                    onChange={(e) => setCarPrice(Number(e.target.value))}
+                    className="w-full accent-blue-600"
+                  />
+                </div>
+                <div>
+                  <div className="flex justify-between text-[11px] font-semibold text-slate-600 mb-1">
+                    <span>Down Payment</span>
+                    <span>${downPayment.toLocaleString()}</span>
+                  </div>
+                  <input
+                    type="range"
+                    min="0"
+                    max="30000"
+                    step="500"
+                    value={downPayment}
+                    onChange={(e) => setDownPayment(Number(e.target.value))}
+                    className="w-full accent-blue-600"
+                  />
+                </div>
+                <div>
+                  <div className="flex justify-between text-[11px] font-semibold text-slate-600 mb-1">
+                    <span>Loan Term</span>
+                    <span>{loanTerm} mo.</span>
+                  </div>
+                  <input
+                    type="range"
+                    min="12"
+                    max="72"
+                    step="12"
+                    value={loanTerm}
+                    onChange={(e) => setLoanTerm(Number(e.target.value))}
+                    className="w-full accent-blue-600"
+                  />
+                </div>
+              </div>
+
+              <div className="bg-[#F5F5F7] p-4 rounded-xl border border-[#D2D2D7]/60 text-center space-y-1">
+                <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">
+                  Estimated Payment
+                </span>
+                <div className="text-2xl font-bold text-blue-600">
+                  ${Math.round(monthlyPayment).toLocaleString()}
+                  <span className="text-xs font-normal text-slate-500">/mo</span>
+                </div>
+                <p className="text-[10px] text-slate-400 pt-1.5 border-t border-slate-200">
+                  {interestRate}% APR on ${loanAmount.toLocaleString()} financed. Subject to credit
+                  approval.
+                </p>
+              </div>
+            </div>
+
+            {/* Trade-In Appraisal — compact sidebar variant, same card
+                treatment as the two above it. */}
+            <div className="bg-white p-6 rounded-2xl border border-[#D2D2D7]/60 shadow-xs space-y-5">
+              <div>
+                <h3 className="text-xs font-bold uppercase tracking-wider text-slate-500">
+                  Trade-In Appraisal
+                </h3>
+                <p className="mt-1 text-[11px] text-slate-400">
+                  Get an instant estimate for your current vehicle.
+                </p>
+              </div>
+
+              {tradeSubmitted ? (
+                <div className="p-4 rounded-xl bg-emerald-500/10 border border-emerald-500/20 text-center space-y-1">
+                  <h4 className="text-xs font-bold text-emerald-700">Inquiry Submitted</h4>
+                  <p className="text-[11px] text-emerald-600">
+                    Our team will contact you with an offer within 24 hours.
+                  </p>
+                </div>
+              ) : (
+                <form onSubmit={handleTradeSubmit} className="space-y-3">
+                  <div className="grid grid-cols-2 gap-2.5">
+                    <div>
+                      <label className="block text-[11px] font-semibold text-slate-600 mb-1">Make</label>
+                      <input
+                        type="text"
+                        placeholder="Toyota"
+                        required
+                        value={tradeMake}
+                        onChange={(e) => setTradeMake(e.target.value)}
+                        className="w-full px-3 py-2.5 rounded-xl bg-slate-50 border border-slate-200 text-xs text-slate-900 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-[11px] font-semibold text-slate-600 mb-1">Model</label>
+                      <input
+                        type="text"
+                        placeholder="RAV4"
+                        required
+                        value={tradeModel}
+                        onChange={(e) => setTradeModel(e.target.value)}
+                        className="w-full px-3 py-2.5 rounded-xl bg-slate-50 border border-slate-200 text-xs text-slate-900 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                      />
+                    </div>
+                  </div>
+                  <div className="grid grid-cols-2 gap-2.5">
+                    <div>
+                      <label className="block text-[11px] font-semibold text-slate-600 mb-1">Year</label>
+                      <input
+                        type="number"
+                        placeholder="2019"
+                        required
+                        value={tradeYear}
+                        onChange={(e) => setTradeYear(e.target.value)}
+                        className="w-full px-3 py-2.5 rounded-xl bg-slate-50 border border-slate-200 text-xs text-slate-900 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-[11px] font-semibold text-slate-600 mb-1">Mileage</label>
+                      <input
+                        type="text"
+                        placeholder="45,000 mi"
+                        required
+                        value={tradeMileage}
+                        onChange={(e) => setTradeMileage(e.target.value)}
+                        className="w-full px-3 py-2.5 rounded-xl bg-slate-50 border border-slate-200 text-xs text-slate-900 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                      />
+                    </div>
+                  </div>
+                  <button
+                    type="submit"
+                    className="w-full py-2.5 px-4 rounded-xl bg-blue-600 hover:bg-blue-700 text-white font-medium text-xs shadow-lg shadow-blue-500/20 transition-all"
+                  >
+                    Get Trade-In Estimate
+                  </button>
+                </form>
+              )}
             </div>
           </div>
 
@@ -313,181 +462,6 @@ export default function PublicInventoryPage() {
           </div>
         </div>
 
-        {/* Bottom Section: Two Tabs Component (Finance Calculator & Trade-In Form) */}
-        <div className="bg-white rounded-3xl border border-[#D2D2D7]/60 shadow-xl overflow-hidden max-w-4xl mx-auto">
-          {/* Tab Headers */}
-          <div className="flex border-b border-[#D2D2D7]/60 bg-[#F5F5F7]/50">
-            <button
-              onClick={() => setActiveTab("finance")}
-              className={`flex-1 py-4 text-xs font-bold uppercase tracking-wider transition-all ${activeTab === "finance" ? "bg-white text-blue-600 border-b-2 border-blue-600 shadow-xs" : "text-slate-500 hover:text-slate-800"}`}
-            >
-              Finance Calculator
-            </button>
-            <button
-              onClick={() => setActiveTab("trade")}
-              className={`flex-1 py-4 text-xs font-bold uppercase tracking-wider transition-all ${activeTab === "trade" ? "bg-white text-blue-600 border-b-2 border-blue-600 shadow-xs" : "text-slate-500 hover:text-slate-800"}`}
-            >
-              Trade-In Appraisal
-            </button>
-          </div>
-
-          {/* Tab Content */}
-          <div className="p-8 sm:p-12">
-            {activeTab === "finance" ? (
-              <div className="space-y-8">
-                <div className="text-center max-w-lg mx-auto">
-                  <h3 className="text-2xl font-bold tracking-tight text-[#1D1D1F]">
-                    Estimate Your Monthly Payment
-                  </h3>
-                  <p className="text-xs text-slate-500 mt-1">
-                    Configure your terms to find an estimated financing plan tailored to your budget.
-                  </p>
-                </div>
-
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-8 items-center">
-                  <div className="space-y-5">
-                    <div>
-                      <div className="flex justify-between text-xs font-semibold text-slate-600 mb-1">
-                        <span>Vehicle Price</span>
-                        <span>${carPrice.toLocaleString()}</span>
-                      </div>
-                      <input
-                        type="range"
-                        min="15000"
-                        max="90000"
-                        step="1000"
-                        value={carPrice}
-                        onChange={(e) => setCarPrice(Number(e.target.value))}
-                        className="w-full accent-blue-600"
-                      />
-                    </div>
-                    <div>
-                      <div className="flex justify-between text-xs font-semibold text-slate-600 mb-1">
-                        <span>Down Payment</span>
-                        <span>${downPayment.toLocaleString()}</span>
-                      </div>
-                      <input
-                        type="range"
-                        min="0"
-                        max="30000"
-                        step="500"
-                        value={downPayment}
-                        onChange={(e) => setDownPayment(Number(e.target.value))}
-                        className="w-full accent-blue-600"
-                      />
-                    </div>
-                    <div>
-                      <div className="flex justify-between text-xs font-semibold text-slate-600 mb-1">
-                        <span>Loan Term</span>
-                        <span>{loanTerm} Months</span>
-                      </div>
-                      <input
-                        type="range"
-                        min="12"
-                        max="72"
-                        step="12"
-                        value={loanTerm}
-                        onChange={(e) => setLoanTerm(Number(e.target.value))}
-                        className="w-full accent-blue-600"
-                      />
-                    </div>
-                  </div>
-
-                  {/* Estimated Output Card */}
-                  <div className="bg-[#F5F5F7] p-8 rounded-2xl border border-[#D2D2D7]/60 text-center flex flex-col justify-center space-y-3">
-                    <span className="text-[11px] font-bold text-slate-400 uppercase tracking-widest">
-                      Estimated Payment
-                    </span>
-                    <div className="text-4xl font-bold text-blue-600">
-                      ${Math.round(monthlyPayment).toLocaleString()}{" "}
-                      <span className="text-xs text-slate-500 font-normal">/mo</span>
-                    </div>
-                    <p className="text-[11px] text-slate-400 pt-2 border-t border-slate-200">
-                      Based on {interestRate}% APR and ${loanAmount.toLocaleString()} financed amount. Subject
-                      to credit approval.
-                    </p>
-                  </div>
-                </div>
-              </div>
-            ) : (
-              <div className="space-y-8 max-w-xl mx-auto">
-                <div className="text-center">
-                  <h3 className="text-2xl font-bold tracking-tight text-[#1D1D1F]">Value Your Trade-In</h3>
-                  <p className="text-xs text-slate-500 mt-1">
-                    Get an instant preliminary estimate for your current vehicle toward your next purchase.
-                  </p>
-                </div>
-
-                {tradeSubmitted ? (
-                  <div className="p-6 rounded-2xl bg-emerald-500/10 border border-emerald-500/20 text-center space-y-2">
-                    <h4 className="text-sm font-bold text-emerald-700">Appraisal Inquiry Submitted</h4>
-                    <p className="text-xs text-emerald-600">
-                      Our valuation team will review your vehicle details and contact you with an offer within
-                      24 hours.
-                    </p>
-                  </div>
-                ) : (
-                  <form onSubmit={handleTradeSubmit} className="space-y-4">
-                    <div className="grid grid-cols-2 gap-4">
-                      <div>
-                        <label className="block text-xs font-semibold text-slate-600 mb-1">Make</label>
-                        <input
-                          type="text"
-                          placeholder="e.g. Toyota"
-                          required
-                          value={tradeMake}
-                          onChange={(e) => setTradeMake(e.target.value)}
-                          className="w-full px-4 py-3 rounded-xl bg-slate-50 border border-slate-200 text-xs text-slate-900 focus:outline-none focus:ring-2 focus:ring-blue-500"
-                        />
-                      </div>
-                      <div>
-                        <label className="block text-xs font-semibold text-slate-600 mb-1">Model</label>
-                        <input
-                          type="text"
-                          placeholder="e.g. RAV4"
-                          required
-                          value={tradeModel}
-                          onChange={(e) => setTradeModel(e.target.value)}
-                          className="w-full px-4 py-3 rounded-xl bg-slate-50 border border-slate-200 text-xs text-slate-900 focus:outline-none focus:ring-2 focus:ring-blue-500"
-                        />
-                      </div>
-                    </div>
-                    <div className="grid grid-cols-2 gap-4">
-                      <div>
-                        <label className="block text-xs font-semibold text-slate-600 mb-1">Year</label>
-                        <input
-                          type="number"
-                          placeholder="2019"
-                          required
-                          value={tradeYear}
-                          onChange={(e) => setTradeYear(e.target.value)}
-                          className="w-full px-4 py-3 rounded-xl bg-slate-50 border border-slate-200 text-xs text-slate-900 focus:outline-none focus:ring-2 focus:ring-blue-500"
-                        />
-                      </div>
-                      <div>
-                        <label className="block text-xs font-semibold text-slate-600 mb-1">Mileage</label>
-                        <input
-                          type="text"
-                          placeholder="45,000 mi"
-                          required
-                          value={tradeMileage}
-                          onChange={(e) => setTradeMileage(e.target.value)}
-                          className="w-full px-4 py-3 rounded-xl bg-slate-50 border border-slate-200 text-xs text-slate-900 focus:outline-none focus:ring-2 focus:ring-blue-500"
-                        />
-                      </div>
-                    </div>
-                    <button
-                      type="submit"
-                      className="w-full py-3.5 px-4 rounded-xl bg-blue-600 hover:bg-blue-700 text-white font-medium text-xs shadow-lg shadow-blue-500/20 transition-all mt-4"
-                    >
-                      Get Trade-In Estimate
-                    </button>
-                  </form>
-                )}
-              </div>
-            )}
-          </div>
-        </div>
       </div>
     </div>
   );
