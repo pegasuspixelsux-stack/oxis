@@ -3,6 +3,7 @@ import { Geist, Geist_Mono } from "next/font/google";
 import { AuthProvider } from "@/components/auth-provider";
 import { MotionProvider } from "@/components/motion-provider";
 import { SettingsProvider } from "@/components/settings-provider";
+import { AgenteWidget } from "@/components/AgenteWidget";
 import "./globals.css";
 
 const geistSans = Geist({
@@ -50,6 +51,7 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
         <AuthProvider>
           <SettingsProvider>
             <MotionProvider>{children}</MotionProvider>
+            <AgenteWidget />
           </SettingsProvider>
         </AuthProvider>
       </body>

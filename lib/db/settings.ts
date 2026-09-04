@@ -29,6 +29,7 @@ export type DealershipSettings = {
   heroBannerImageUrl: string;
   staff: StaffMember[];
   qualificationQuestions: QualificationQuestion[];
+  agenteGreeting: string;
 };
 
 // The default qualification flow the Agente concierge widget walks a
@@ -39,7 +40,7 @@ export const DEFAULT_QUALIFICATION_QUESTIONS: QualificationQuestion[] = [
   { id: "budget", text: "¿Cuál es tu presupuesto aproximado?", enabled: true, order: 1 },
   { id: "timeline", text: "¿Cuándo te gustaría comprar?", enabled: true, order: 2 },
   { id: "trade-in", text: "¿Tenés un vehículo para entregar en parte de pago?", enabled: true, order: 3 },
-  { id: "financing", text: "¿Te interesa financiación?", enabled: true, order: 4 },
+  { id: "financing", text: "¿Cómo preferís pagar?", enabled: true, order: 4 },
   { id: "test-drive", text: "¿Querés agendar una prueba de manejo?", enabled: true, order: 5 },
   { id: "name", text: "¿Cuál es tu nombre?", enabled: true, order: 6 },
   { id: "contact", text: "¿Cuál es tu email o teléfono de contacto?", enabled: true, order: 7 },
@@ -58,4 +59,6 @@ export const DEFAULT_SETTINGS: DealershipSettings = {
   heroBannerImageUrl: "https://images.unsplash.com/photo-1493238792000-8113da705763",
   staff: [],
   qualificationQuestions: DEFAULT_QUALIFICATION_QUESTIONS,
+  agenteGreeting:
+    "¡Hola! 👋 Soy tu asesor comercial virtual. Estoy para ayudarte a encontrar el auto ideal — empecemos.",
 };

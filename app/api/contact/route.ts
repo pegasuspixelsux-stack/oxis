@@ -24,11 +24,20 @@ export async function POST(request: Request) {
 
   const errors: Record<string, string> = {};
   if (!body.name?.trim()) errors.name = "El nombre es obligatorio.";
-  if (!body.email?.trim() || !EMAIL_RE.test(body.email.trim())) {
-    errors.email = "Se requiere un correo electrónico válido.";
-  }
-  if (!body.phone?.trim() || body.phone.replace(/\D/g, "").length < 7) {
-    errors.phone = "Se requiere un número de teléfono válido.";
+
+  // The homepage form always sends both, but the Agente widget collects a
+  // single "email o teléfono" answer — accept whichever one is present and
+  // valid, only failing when neither is. A field that IS present still has
+  // to be well-formed.
+  const emailProvided = Boolean(body.email?.trim());
+  const phoneProvided = Boolean(body.phone?.trim());
+  const emailValid = emailProvided && EMAIL_RE.test(body.email!.trim());
+  const phoneValid = phoneProvided && body.phone!.replace(/\D/g, "").length >= 7;
+
+  if (emailProvided && !emailValid) errors.email = "Se requiere un correo electrónico válido.";
+  if (phoneProvided && !phoneValid) errors.phone = "Se requiere un número de teléfono válido.";
+  if (!emailValid && !phoneValid && !errors.email && !errors.phone) {
+    errors.contact = "Se requiere un correo electrónico o teléfono válido.";
   }
 
   if (Object.keys(errors).length > 0) {
@@ -38,8 +47,8 @@ export async function POST(request: Request) {
   try {
     await createLead({
       name: body.name!.trim(),
-      email: body.email!.trim(),
-      phone: body.phone!.trim(),
+      email: body.email?.trim() ?? "",
+      phone: body.phone?.trim() ?? "",
       preferredContact: body.preferredContact ?? "Email",
       vehicleId: body.vehicleId && body.vehicleId !== "none" ? body.vehicleId : null,
       preferredDate: body.preferredDate || null,

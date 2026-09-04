@@ -9,8 +9,9 @@ import {
   SETTINGS_DOC_ID,
   type DealershipSettings,
   type StaffMember,
+  type QualificationQuestion,
 } from "@/lib/db/settings";
-import { PlusIcon, TrashIcon } from "@/components/icons";
+import { PlusIcon, TrashIcon, ArrowUpIcon, ArrowDownIcon } from "@/components/icons";
 
 const inputClasses =
   "w-full rounded-xl border border-black/10 bg-[#F5F5F7] px-3.5 py-2.5 text-sm text-[#1D1D1F] outline-none transition-colors focus:border-[#0071E3] focus:bg-white";
@@ -64,6 +65,44 @@ export default function DashboardSettingsPage() {
     );
   }
 
+  function addQuestion() {
+    const question: QualificationQuestion = {
+      id: newStaffId(),
+      text: "",
+      enabled: true,
+      order: form.qualificationQuestions.length,
+    };
+    update("qualificationQuestions", [...form.qualificationQuestions, question]);
+  }
+
+  function updateQuestion(id: string, patch: Partial<QualificationQuestion>) {
+    update(
+      "qualificationQuestions",
+      form.qualificationQuestions.map((q) => (q.id === id ? { ...q, ...patch } : q))
+    );
+  }
+
+  function removeQuestion(id: string) {
+    update(
+      "qualificationQuestions",
+      form.qualificationQuestions.filter((q) => q.id !== id)
+    );
+  }
+
+  // Array position is the source of truth for display order — `order` is
+  // just what gets persisted, recomputed from the new position on every
+  // move so a reload always sorts back into the order shown here.
+  function moveQuestion(index: number, direction: -1 | 1) {
+    const target = index + direction;
+    if (target < 0 || target >= form.qualificationQuestions.length) return;
+    const next = [...form.qualificationQuestions];
+    [next[index], next[target]] = [next[target], next[index]];
+    update(
+      "qualificationQuestions",
+      next.map((q, i) => ({ ...q, order: i }))
+    );
+  }
+
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     setSaving(true);
@@ -74,13 +113,16 @@ export default function DashboardSettingsPage() {
       const cleanStaff = form.staff
         .map((s) => ({ ...s, name: s.name.trim(), role: s.role.trim() }))
         .filter((s) => s.name.length > 0);
+      const cleanQuestions = form.qualificationQuestions
+        .map((q) => ({ ...q, text: q.text.trim() }))
+        .filter((q) => q.text.length > 0);
 
       await setDoc(
         doc(db, SETTINGS_COLLECTION, SETTINGS_DOC_ID),
-        { ...form, staff: cleanStaff },
+        { ...form, staff: cleanStaff, qualificationQuestions: cleanQuestions },
         { merge: true }
       );
-      setForm((prev) => ({ ...prev, staff: cleanStaff }));
+      setForm((prev) => ({ ...prev, staff: cleanStaff, qualificationQuestions: cleanQuestions }));
       setSaved(true);
     } catch (err) {
       console.error("[dashboard/settings] save failed", err);
@@ -225,6 +267,98 @@ export default function DashboardSettingsPage() {
                     onClick={() => removeStaff(member.id)}
                     className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl text-[#8E8E93] transition-colors hover:bg-red-50 hover:text-red-600"
                     aria-label="Quitar integrante"
+                  >
+                    <TrashIcon className="h-4 w-4" />
+                  </button>
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+
+        <div className="rounded-2xl border border-black/[0.06] bg-white p-6 shadow-[0_1px_2px_rgba(0,0,0,0.04)]">
+          <div className="flex items-center justify-between">
+            <div>
+              <h2 className="text-sm font-semibold text-[#1D1D1F]">Preguntas del widget Agente</h2>
+              <p className="mt-0.5 text-xs text-[#6E6E73]">
+                El orden y las preguntas activas acá son exactamente lo que Agente le pregunta a un
+                visitante del sitio.
+              </p>
+            </div>
+          </div>
+
+          <div className="mt-4">
+            <label className={labelClasses}>Mensaje de bienvenida</label>
+            <textarea
+              rows={2}
+              value={form.agenteGreeting}
+              onChange={(e) => update("agenteGreeting", e.target.value)}
+              className={`${inputClasses} resize-none`}
+            />
+            <p className="mt-1 text-[11px] text-[#8E8E93]">
+              Lo primero que ve un visitante al abrir el widget, antes de la primera pregunta.
+            </p>
+          </div>
+
+          <div className="mt-5 flex items-center justify-between">
+            <h3 className="text-xs font-bold uppercase tracking-wider text-[#8E8E93]">Preguntas</h3>
+            <button
+              type="button"
+              onClick={addQuestion}
+              className="inline-flex items-center gap-1.5 rounded-xl border border-black/10 px-3 py-2 text-xs font-semibold text-[#6E6E73] transition-all active:scale-[0.98] hover:border-[#0071E3] hover:text-[#0071E3]"
+            >
+              <PlusIcon className="h-3.5 w-3.5" />
+              Agregar pregunta
+            </button>
+          </div>
+
+          {form.qualificationQuestions.length === 0 ? (
+            <p className="mt-4 text-sm text-[#8E8E93]">No hay preguntas configuradas.</p>
+          ) : (
+            <div className="mt-4 space-y-2">
+              {form.qualificationQuestions.map((question, index) => (
+                <div key={question.id} className="flex items-center gap-2">
+                  <div className="flex flex-col">
+                    <button
+                      type="button"
+                      onClick={() => moveQuestion(index, -1)}
+                      disabled={index === 0}
+                      className="flex h-5 w-6 items-center justify-center text-[#8E8E93] transition-colors hover:text-[#1D1D1F] disabled:opacity-25"
+                      aria-label="Subir"
+                    >
+                      <ArrowUpIcon className="h-3.5 w-3.5" />
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => moveQuestion(index, 1)}
+                      disabled={index === form.qualificationQuestions.length - 1}
+                      className="flex h-5 w-6 items-center justify-center text-[#8E8E93] transition-colors hover:text-[#1D1D1F] disabled:opacity-25"
+                      aria-label="Bajar"
+                    >
+                      <ArrowDownIcon className="h-3.5 w-3.5" />
+                    </button>
+                  </div>
+                  <input
+                    type="text"
+                    placeholder="Texto de la pregunta"
+                    value={question.text}
+                    onChange={(e) => updateQuestion(question.id, { text: e.target.value })}
+                    className={`${inputClasses} flex-1 ${question.enabled ? "" : "opacity-50"}`}
+                  />
+                  <label className="flex shrink-0 cursor-pointer items-center gap-1.5 text-[11px] font-medium text-[#6E6E73]">
+                    <input
+                      type="checkbox"
+                      checked={question.enabled}
+                      onChange={(e) => updateQuestion(question.id, { enabled: e.target.checked })}
+                      className="h-3.5 w-3.5 accent-[#0071E3]"
+                    />
+                    Activa
+                  </label>
+                  <button
+                    type="button"
+                    onClick={() => removeQuestion(question.id)}
+                    className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl text-[#8E8E93] transition-colors hover:bg-red-50 hover:text-red-600"
+                    aria-label="Quitar pregunta"
                   >
                     <TrashIcon className="h-4 w-4" />
                   </button>
