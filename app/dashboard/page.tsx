@@ -1,15 +1,17 @@
 import Image from "next/image";
 import Link from "next/link";
-import { vehicles, formatPrice } from "@/lib/vehicles";
+import { adminDb } from "@/lib/firebase-admin";
+import { listCars } from "@/lib/db/seed-cars";
+import type { Car } from "@/lib/db/cars";
 import { listLeads, LEAD_STAGE_LABELS, type Lead } from "@/lib/db/leads";
 
-// The leads panel below reads live Firestore data on every request.
+// This panel reads live Firestore data (cars + leads) on every request.
 export const dynamic = "force-dynamic";
 
-function vehicleLabel(vehicleId: string | null): string {
+function vehicleLabel(vehicleId: string | null, cars: Car[]): string {
   if (!vehicleId) return "Aún no está seguro";
-  const vehicle = vehicles.find((v) => v.id === vehicleId);
-  return vehicle ? `${vehicle.year} ${vehicle.make} ${vehicle.model}` : vehicleId;
+  const car = cars.find((c) => c.id === vehicleId);
+  return car ? car.title : vehicleId;
 }
 
 function relativeTime(iso: string): string {
@@ -23,7 +25,14 @@ function relativeTime(iso: string): string {
 }
 
 export default async function DashboardOverview() {
-  const recentVehicles = vehicles.slice(0, 3);
+  let cars: Car[] = [];
+  let carsError: string | null = null;
+  try {
+    cars = await listCars(adminDb());
+  } catch (error) {
+    carsError = error instanceof Error ? error.message : "Error desconocido.";
+  }
+  const recentVehicles = cars.slice(0, 3);
 
   let leads: Lead[] = [];
   let leadsError: string | null = null;
@@ -35,7 +44,7 @@ export default async function DashboardOverview() {
   const recentLeads = leads.slice(0, 3);
 
   const STATS = [
-    { label: "Inventario Activo", value: `${vehicles.length} autos`, change: "+2 esta semana" },
+    { label: "Inventario Activo", value: carsError ? "—" : `${cars.length} autos`, change: "" },
     { label: "Consultas Totales", value: leadsError ? "—" : String(leads.length), change: "" },
     { label: "Tasa de Conversión", value: "4,8%", change: "+0,4%" },
     { label: "Calificación Google", value: "4.9 / 5", change: "480+ reseñas" },
@@ -79,25 +88,32 @@ export default async function DashboardOverview() {
             </Link>
           </div>
           <div className="space-y-3">
-            {recentVehicles.map((vehicle) => (
+            {carsError ? (
+              <p className="text-xs text-[#8A5300]">No se pudo conectar con Firestore: {carsError}</p>
+            ) : recentVehicles.length === 0 ? (
+              <p className="text-xs text-[#6E6E73]">Todavía no hay vehículos cargados.</p>
+            ) : (
+            recentVehicles.map((car) => {
+              const cover = car.images?.[0] || car.img || "";
+              return (
               <div
-                key={vehicle.id}
+                key={car.id}
                 className="flex items-center gap-4 rounded-xl border border-black/[0.06] bg-[#F5F5F7]/60 p-3"
               >
-                <div className="relative h-11 w-16 shrink-0 overflow-hidden rounded-lg">
-                  <Image src={vehicle.image} alt={vehicle.imageAlt} fill className="object-cover" />
+                <div className="relative h-11 w-16 shrink-0 overflow-hidden rounded-lg bg-white">
+                  {cover && <Image src={cover} alt={car.title} fill className="object-cover" />}
                 </div>
                 <div className="min-w-0 flex-1">
-                  <p className="truncate text-xs font-semibold text-[#1D1D1F]">
-                    {vehicle.year} {vehicle.make} {vehicle.model}
-                  </p>
-                  <p className="text-xs font-medium text-[#0071E3]">{formatPrice(vehicle.price)}</p>
+                  <p className="truncate text-xs font-semibold text-[#1D1D1F]">{car.title}</p>
+                  <p className="text-xs font-medium text-[#0071E3]">{car.price}</p>
                 </div>
                 <span className="shrink-0 rounded-full bg-emerald-500/10 px-2 py-0.5 text-[10px] font-semibold text-emerald-600">
-                  Publicado
+                  {car.status === "Published" ? "Publicado" : car.status}
                 </span>
               </div>
-            ))}
+              );
+            })
+            )}
           </div>
         </div>
 
@@ -121,7 +137,7 @@ export default async function DashboardOverview() {
                 >
                   <div>
                     <p className="text-xs font-semibold text-[#1D1D1F]">{lead.name}</p>
-                    <p className="mt-0.5 text-[11px] text-[#6E6E73]">{vehicleLabel(lead.vehicleId)}</p>
+                    <p className="mt-0.5 text-[11px] text-[#6E6E73]">{vehicleLabel(lead.vehicleId, cars)}</p>
                   </div>
                   <div className="text-right">
                     <span className="rounded-full bg-[#0071E3]/10 px-2 py-0.5 text-[10px] font-semibold text-[#0071E3]">

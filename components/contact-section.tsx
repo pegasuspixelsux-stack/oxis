@@ -1,8 +1,11 @@
 "use client";
 
-import { useMemo, useState, type FormEvent } from "react";
+import { useEffect, useMemo, useState, type FormEvent } from "react";
 import Image from "next/image";
 import { motion, AnimatePresence } from "motion/react";
+import { collection, getDocs, orderBy, query } from "firebase/firestore";
+import { db } from "@/lib/firebase";
+import { CARS_COLLECTION, type Car } from "@/lib/db/cars";
 import { Container } from "@/components/ui/container";
 import { Reveal } from "@/components/reveal";
 import { Button } from "@/components/ui/button";
@@ -10,7 +13,6 @@ import { PillGroup } from "@/components/ui/pill-group";
 import { FilterSelect } from "@/components/inventory/filter-select";
 import { useShowroom } from "@/components/showroom-context";
 import { useSettings } from "@/components/settings-provider";
-import { vehicles } from "@/lib/vehicles";
 import { buildWhatsAppLink } from "@/lib/whatsapp";
 import { PhoneIcon, MailIcon, PinIcon, ClockIcon, CheckCircleIcon, WhatsAppIcon } from "@/components/icons";
 
@@ -53,12 +55,30 @@ export function ContactSection() {
   const [errors, setErrors] = useState<Errors>({});
   const [status, setStatus] = useState<"idle" | "submitting" | "success" | "error">("idle");
 
+  // Fetched once from Firestore so the picker (and the vehicleId a lead
+  // ends up tagged with) refers to a real inventory document — it used to
+  // read the static lib/vehicles.ts demo data, which no dashboard page
+  // reads anymore, so a lead's vehicle of interest showed up as a raw,
+  // unresolvable id instead of a name.
+  const [cars, setCars] = useState<Car[]>([]);
+  useEffect(() => {
+    let cancelled = false;
+    getDocs(query(collection(db, CARS_COLLECTION), orderBy("createdAt", "desc")))
+      .then((snap) => {
+        if (!cancelled) setCars(snap.docs.map((d) => ({ id: d.id, ...d.data() }) as Car));
+      })
+      .catch((err) => console.error("[contact-section] failed to load cars", err));
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
   const vehicleOptions = useMemo(
     () => [
       { value: "none", label: "Aún no estoy seguro" },
-      ...vehicles.map((v) => ({ value: v.id, label: `${v.year} ${v.make} ${v.model}` })),
+      ...cars.map((c) => ({ value: c.id, label: c.title })),
     ],
-    []
+    [cars]
   );
 
   const effectiveVehicleId = vehicleId !== "none" ? vehicleId : selectedVehicleId ?? "none";

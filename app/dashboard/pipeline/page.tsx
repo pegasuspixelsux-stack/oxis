@@ -1,15 +1,17 @@
 import { listLeads, LEAD_STAGE_LABELS, type Lead, type LeadStage } from "@/lib/db/leads";
-import { vehicles } from "@/lib/vehicles";
+import { adminDb } from "@/lib/firebase-admin";
+import { listCars } from "@/lib/db/seed-cars";
+import type { Car } from "@/lib/db/cars";
 
 // This reads live Firestore data on every request — never prerender/cache it.
 export const dynamic = "force-dynamic";
 
 const STAGE_ORDER: LeadStage[] = ["new", "contacted", "test-drive", "financing"];
 
-function vehicleLabel(vehicleId: string | null): string {
+function vehicleLabel(vehicleId: string | null, cars: Car[]): string {
   if (!vehicleId) return "Aún no está seguro";
-  const vehicle = vehicles.find((v) => v.id === vehicleId);
-  return vehicle ? `${vehicle.year} ${vehicle.make} ${vehicle.model}` : vehicleId;
+  const car = cars.find((c) => c.id === vehicleId);
+  return car ? car.title : vehicleId;
 }
 
 function relativeTime(iso: string): string {
@@ -25,10 +27,11 @@ function relativeTime(iso: string): string {
 
 export default async function PipelinePage() {
   let leads: Lead[] = [];
+  let cars: Car[] = [];
   let configError: string | null = null;
 
   try {
-    leads = await listLeads();
+    [leads, cars] = await Promise.all([listLeads(), listCars(adminDb())]);
   } catch (error) {
     configError = error instanceof Error ? error.message : "Error desconocido.";
   }
@@ -82,7 +85,7 @@ export default async function PipelinePage() {
                     >
                       <h4 className="text-xs font-semibold text-[#1D1D1F]">{lead.name}</h4>
                       <p className="mt-0.5 text-[11px] text-[#6E6E73]">
-                        {vehicleLabel(lead.vehicleId)}
+                        {vehicleLabel(lead.vehicleId, cars)}
                       </p>
                       <p className="mt-2 text-[10px] font-medium text-[#8E8E93]">
                         {relativeTime(lead.createdAt)}

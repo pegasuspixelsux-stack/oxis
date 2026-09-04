@@ -1,8 +1,9 @@
-// Firestore seed logic for the `cars` collection. Deliberately has NO
-// import of "server-only" or "@/lib/firebase-admin" — it takes a
-// `Firestore` instance as a parameter instead of constructing one itself.
-// That keeps this module callable from two places:
-//   1. app/api/admin/seed-cars/route.ts (inside the Next.js server, using adminDb())
+// Admin-SDK-dependent operations on the `cars` collection (seeding, and
+// server-side reads for pages like the dashboard overview). Deliberately
+// has NO import of "server-only" or "@/lib/firebase-admin" — every export
+// here takes a `Firestore` instance as a parameter instead of constructing
+// one itself. That keeps this module callable from two places:
+//   1. Next.js server code (route handlers, Server Components), using adminDb()
 //   2. scripts/seed-cars.ts (a plain `node` CLI script, which can't import
 //      "server-only"-guarded modules since it isn't running inside Next's
 //      server bundler where that condition is satisfied)
@@ -13,7 +14,13 @@
 
 import type { Firestore } from "firebase-admin/firestore";
 import { FieldValue } from "firebase-admin/firestore";
-import { CARS_COLLECTION, CAR_SEED_DATA } from "./cars";
+import { CARS_COLLECTION, CAR_SEED_DATA, type Car } from "./cars";
+
+/** All published listings, newest first — used by server-rendered pages. */
+export async function listCars(db: Firestore): Promise<Car[]> {
+  const snap = await db.collection(CARS_COLLECTION).orderBy("createdAt", "desc").get();
+  return snap.docs.map((doc) => ({ id: doc.id, ...doc.data() }) as Car);
+}
 
 export type SeedResult =
   | { seeded: true; count: number }

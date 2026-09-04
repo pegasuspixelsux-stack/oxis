@@ -1,13 +1,15 @@
 import { listLeads, LEAD_STAGE_LABELS, type Lead } from "@/lib/db/leads";
-import { vehicles } from "@/lib/vehicles";
+import { adminDb } from "@/lib/firebase-admin";
+import { listCars } from "@/lib/db/seed-cars";
+import type { Car } from "@/lib/db/cars";
 
 // This reads live Firestore data on every request — never prerender/cache it.
 export const dynamic = "force-dynamic";
 
-function vehicleLabel(vehicleId: string | null): string {
+function vehicleLabel(vehicleId: string | null, cars: Car[]): string {
   if (!vehicleId) return "Aún no está seguro";
-  const vehicle = vehicles.find((v) => v.id === vehicleId);
-  return vehicle ? `${vehicle.year} ${vehicle.make} ${vehicle.model}` : vehicleId;
+  const car = cars.find((c) => c.id === vehicleId);
+  return car ? car.title : vehicleId;
 }
 
 function formatDate(iso: string): string {
@@ -28,10 +30,11 @@ const STAGE_BADGE: Record<Lead["stage"], string> = {
 
 export default async function LeadsPage() {
   let leads: Lead[] = [];
+  let cars: Car[] = [];
   let configError: string | null = null;
 
   try {
-    leads = await listLeads();
+    [leads, cars] = await Promise.all([listLeads(), listCars(adminDb())]);
   } catch (error) {
     configError = error instanceof Error ? error.message : "Error desconocido.";
   }
@@ -83,7 +86,7 @@ export default async function LeadsPage() {
                       <div className="mt-0.5 text-xs text-[#8E8E93]">{lead.phone}</div>
                     </td>
                     <td className="px-6 py-4 font-medium text-[#6E6E73]">
-                      {vehicleLabel(lead.vehicleId)}
+                      {vehicleLabel(lead.vehicleId, cars)}
                     </td>
                     <td className="px-6 py-4">
                       <span
