@@ -4,6 +4,8 @@
 // section, hero, vehicle detail pages) and the dashboard settings form
 // both import this module directly.
 
+import type { BrandTheme } from "@/lib/themes";
+
 export const SETTINGS_COLLECTION = "settings";
 export const SETTINGS_DOC_ID = "general";
 
@@ -30,6 +32,7 @@ export type DealershipSettings = {
   staff: StaffMember[];
   qualificationQuestions: QualificationQuestion[];
   agenteGreeting: string;
+  brandTheme: BrandTheme;
 };
 
 // The default qualification flow the Agente concierge widget walks a
@@ -61,4 +64,5 @@ export const DEFAULT_SETTINGS: DealershipSettings = {
   qualificationQuestions: DEFAULT_QUALIFICATION_QUESTIONS,
   agenteGreeting:
     "¡Hola! 👋 Soy tu asesor comercial virtual. Estoy para ayudarte a encontrar el auto ideal — empecemos.",
+  brandTheme: "bmw",
 };
