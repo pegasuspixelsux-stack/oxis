@@ -3,7 +3,7 @@
 // resolved by the theme routers in components/themes/. This module has
 // zero dependencies so both client and server code can import it.
 
-export const BRAND_THEMES = ["bmw", "mini", "fiat"] as const;
+export const BRAND_THEMES = ["bmw", "mini", "fiat", "rs-motors", "difor", "voituret"] as const;
 
 export type BrandTheme = (typeof BRAND_THEMES)[number];
 

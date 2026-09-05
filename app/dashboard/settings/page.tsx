@@ -22,6 +22,9 @@ const BRAND_THEME_LABELS: Record<(typeof BRAND_THEMES)[number], string> = {
   bmw: "BMW",
   mini: "MINI",
   fiat: "Fiat",
+  "rs-motors": "RS Motors",
+  difor: "Difor",
+  voituret: "Voituret",
 };
 
 function newStaffId(): string {

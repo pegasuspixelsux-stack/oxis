@@ -42,4 +42,37 @@ export const THEMES: Record<BrandTheme, ThemeSurfaces> = {
       loading: () => <ThemeSkeleton surface="detail" />,
     }),
   },
+  "rs-motors": {
+    Home: dynamic(() => import("./rs-motors/HomeHero"), {
+      loading: () => <ThemeSkeleton surface="home" />,
+    }),
+    InventoryList: dynamic(() => import("./rs-motors/InventoryGrid"), {
+      loading: () => <ThemeSkeleton surface="list" />,
+    }),
+    VehicleDetail: dynamic(() => import("./rs-motors/DetailView"), {
+      loading: () => <ThemeSkeleton surface="detail" />,
+    }),
+  },
+  difor: {
+    Home: dynamic(() => import("./difor/HomeHero"), {
+      loading: () => <ThemeSkeleton surface="home" />,
+    }),
+    InventoryList: dynamic(() => import("./difor/InventoryGrid"), {
+      loading: () => <ThemeSkeleton surface="list" />,
+    }),
+    VehicleDetail: dynamic(() => import("./difor/DetailView"), {
+      loading: () => <ThemeSkeleton surface="detail" />,
+    }),
+  },
+  voituret: {
+    Home: dynamic(() => import("./voituret/HomeHero"), {
+      loading: () => <ThemeSkeleton surface="home" />,
+    }),
+    InventoryList: dynamic(() => import("./voituret/InventoryGrid"), {
+      loading: () => <ThemeSkeleton surface="list" />,
+    }),
+    VehicleDetail: dynamic(() => import("./voituret/DetailView"), {
+      loading: () => <ThemeSkeleton surface="detail" />,
+    }),
+  },
 };
