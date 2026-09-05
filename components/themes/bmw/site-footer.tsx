@@ -1,9 +1,9 @@
 "use client";
 
 import Link from "next/link";
-import { Container } from "@/components/ui/container";
+import { Container } from "@/components/themes/bmw/ui/container";
 import { PhoneIcon, MailIcon, PinIcon, InstagramIcon, FacebookIcon, XSocialIcon } from "@/components/icons";
-import { ThemeSwitcher } from "@/components/theme-switcher";
+import { ThemeSwitcher } from "@/components/themes/bmw/theme-switcher";
 import { useSettings } from "@/components/settings-provider";
 
 const QUICK_LINKS = [

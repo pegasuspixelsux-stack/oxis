@@ -1,4 +1,4 @@
-import { Container } from "@/components/ui/container";
+import { Container } from "@/components/themes/bmw/ui/container";
 import { Reveal } from "@/components/reveal";
 import { ShieldIcon, ChecklistIcon, TagIcon, DocumentIcon } from "@/components/icons";
 
