@@ -147,8 +147,13 @@ export default function PublicInventoryPage() {
 
         {/* Main Layout: Advanced Search on Left, 3-Column Grid on Right */}
         <div className="grid grid-cols-1 lg:grid-cols-4 gap-8 mb-20">
-          {/* Left Column: Advanced Search & Filters */}
-          <div className="lg:col-span-1 space-y-6 sticky top-24">
+          {/* Left Column: Advanced Search & Filters.
+              sticky is scoped to lg: deliberately — below that breakpoint the
+              grid collapses to a single column, so this and the listings
+              grid become full-width stacked siblings; an unscoped sticky
+              here pins this column over the grid as the page scrolls on
+              mobile instead of letting the two flow one after the other. */}
+          <div className="lg:col-span-1 space-y-6 lg:sticky lg:top-24 lg:self-start lg:z-10">
             <div className="bg-white p-6 rounded-2xl border border-[#D2D2D7]/60 shadow-xs space-y-5">
               <h3 className="text-xs font-bold uppercase tracking-wider text-slate-500">Advanced Search</h3>
 
