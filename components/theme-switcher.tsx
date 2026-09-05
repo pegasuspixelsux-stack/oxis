@@ -51,7 +51,7 @@ export function ThemeSwitcher() {
       <span className="mb-2 block font-mono text-sm uppercase sm:text-xs tracking-wider text-fg-subtle">
         Elegí tu estilo
       </span>
-      <div className="inline-flex gap-1.5 rounded-xl border border-border-strong bg-bg-elevated-2 p-1">
+      <div className="inline-flex gap-1.5 rounded-none border border-border-strong bg-bg-elevated-2 p-1">
         {OPTIONS.map((option) => {
           const active = option.value === theme;
           return (
@@ -63,7 +63,7 @@ export function ThemeSwitcher() {
               aria-pressed={active}
               aria-label={option.label}
               title={option.label}
-              className={`flex h-9 w-9 items-center justify-center rounded-lg transition-colors ${
+              className={`flex h-9 w-9 items-center justify-center rounded-none transition-colors ${
                 active ? "bg-accent text-accent-fg" : "text-fg-muted hover:text-fg"
               }`}
             >

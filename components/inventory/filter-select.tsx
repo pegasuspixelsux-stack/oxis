@@ -23,7 +23,7 @@ export function FilterSelect({
       </label>
       <Select.Trigger
         aria-label={label}
-        className="flex h-12 w-full items-center justify-between gap-2 rounded-xl border border-border-strong bg-bg-elevated px-4 text-sm text-fg outline-none transition-colors hover:border-accent data-[state=open]:border-accent"
+        className="flex h-12 w-full items-center justify-between gap-2 rounded-none border border-border-strong bg-bg-elevated px-4 text-sm text-fg outline-none transition-colors hover:border-accent data-[state=open]:border-accent"
       >
         <Select.Value />
         <Select.Icon>
@@ -34,14 +34,14 @@ export function FilterSelect({
         <Select.Content
           position="popper"
           sideOffset={6}
-          className="z-50 overflow-hidden rounded-xl border border-border-strong bg-bg-elevated-2 shadow-2xl"
+          className="z-50 overflow-hidden rounded-none border border-border-strong bg-bg-elevated-2 shadow-2xl"
         >
           <Select.Viewport className="p-1">
             {options.map((option) => (
               <Select.Item
                 key={option.value}
                 value={option.value}
-                className="relative flex cursor-pointer select-none items-center justify-between rounded-lg px-3 py-2.5 text-sm text-fg outline-none data-[highlighted]:bg-accent-soft data-[highlighted]:text-accent"
+                className="relative flex cursor-pointer select-none items-center justify-between rounded-none px-3 py-2.5 text-sm text-fg outline-none data-[highlighted]:bg-accent-soft data-[highlighted]:text-accent"
               >
                 <Select.ItemText>{option.label}</Select.ItemText>
                 <Select.ItemIndicator>

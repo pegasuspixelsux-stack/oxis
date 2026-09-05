@@ -32,21 +32,21 @@ export function SiteFooter() {
               <a
                 href="#"
                 aria-label="OXIS Auto en Instagram"
-                className="flex h-9 w-9 items-center justify-center rounded-lg border border-border-strong text-fg-muted transition-colors hover:border-accent hover:text-accent"
+                className="flex h-9 w-9 items-center justify-center rounded-none border border-border-strong text-fg-muted transition-colors hover:border-accent hover:text-accent"
               >
                 <InstagramIcon className="h-4 w-4" />
               </a>
               <a
                 href="#"
                 aria-label="OXIS Auto en Facebook"
-                className="flex h-9 w-9 items-center justify-center rounded-lg border border-border-strong text-fg-muted transition-colors hover:border-accent hover:text-accent"
+                className="flex h-9 w-9 items-center justify-center rounded-none border border-border-strong text-fg-muted transition-colors hover:border-accent hover:text-accent"
               >
                 <FacebookIcon className="h-4 w-4" />
               </a>
               <a
                 href="#"
                 aria-label="OXIS Auto en X"
-                className="flex h-9 w-9 items-center justify-center rounded-lg border border-border-strong text-fg-muted transition-colors hover:border-accent hover:text-accent"
+                className="flex h-9 w-9 items-center justify-center rounded-none border border-border-strong text-fg-muted transition-colors hover:border-accent hover:text-accent"
               >
                 <XSocialIcon className="h-4 w-4" />
               </a>

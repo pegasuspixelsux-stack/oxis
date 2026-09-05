@@ -1,6 +1,5 @@
 "use client";
 
-import Image from "next/image";
 import { motion } from "motion/react";
 import { Button } from "@/components/ui/button";
 import { Container } from "@/components/ui/container";
@@ -16,14 +15,19 @@ export function HeroSection() {
       className="relative overflow-hidden sm:flex sm:min-h-[96svh] sm:items-end"
     >
       <div className="relative h-96 w-full overflow-hidden sm:absolute sm:inset-0 sm:h-auto">
-        <Image
-          src={settings.heroBannerImageUrl}
-          alt="Un auto deportivo en una calle de la ciudad al atardecer"
-          fill
-          priority
-          sizes="100vw"
-          className="object-cover"
-        />
+        <video
+          autoPlay
+          loop
+          muted
+          playsInline
+          poster={settings.heroBannerImageUrl}
+          className="absolute inset-0 h-full w-full object-cover"
+        >
+          <source
+            src="/hero-images/coverr-the-rear-of-a-bmw-m4-7342-1080p.mp4"
+            type="video/mp4"
+          />
+        </video>
         <div className="absolute inset-0 bg-gradient-to-b from-transparent to-bg sm:hidden" />
         <div className="absolute inset-0 hidden bg-gradient-to-t from-bg/45 via-bg/15 to-transparent sm:block" />
         <div className="absolute inset-x-0 bottom-0 hidden h-24 bg-gradient-to-t from-bg to-transparent sm:block" />
@@ -68,7 +72,7 @@ export function HeroSection() {
             href="#inventory"
             size="lg"
             icon={<ArrowRightIcon className="h-4 w-4" />}
-            className="w-3/4 !rounded-full !px-5 sm:w-auto"
+            className="w-3/4 !rounded-none !px-5 sm:w-auto"
           >
             Ver Inventario
           </Button>

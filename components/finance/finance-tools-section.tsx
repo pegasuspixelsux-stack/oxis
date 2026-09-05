@@ -29,7 +29,7 @@ function Field({ label, children }: { label: string; children: ReactNode }) {
 }
 
 const inputClasses =
-  "h-12 w-full rounded-xl border border-border-strong bg-bg-elevated px-4 text-sm text-fg outline-none transition-colors focus:border-accent";
+  "h-12 w-full rounded-none border border-border-strong bg-bg-elevated px-4 text-sm text-fg outline-none transition-colors focus:border-accent";
 
 type Tab = "calc" | "trade";
 
@@ -100,7 +100,7 @@ export function FinanceToolsSection() {
 
         <div className="mt-6 grid gap-6 lg:mt-10 lg:grid-cols-2">
           <Reveal delay={0.05} className={activeTab === "calc" ? "block" : "hidden lg:block"}>
-            <div className="flex h-full flex-col rounded-2xl border border-border bg-bg-elevated p-6 sm:p-8">
+            <div className="flex h-full flex-col rounded-none border border-border bg-bg-elevated p-6 sm:p-8">
               <h3 className="text-lg font-medium text-fg">Calculadora de cuotas</h3>
               <p className="mt-1 text-sm text-fg-muted">
                 Ajustá los plazos para ver una cuota mensual estimada.
@@ -143,7 +143,7 @@ export function FinanceToolsSection() {
               </div>
 
               <div className="mt-auto pt-8">
-                <div className="rounded-xl bg-accent-soft p-5">
+                <div className="rounded-none bg-accent-soft p-5">
                   <p className="font-mono text-sm uppercase sm:text-xs tracking-wider text-accent">
                     Cuota mensual estimada
                   </p>
@@ -161,7 +161,7 @@ export function FinanceToolsSection() {
           </Reveal>
 
           <Reveal delay={0.1} className={activeTab === "trade" ? "block" : "hidden lg:block"}>
-            <div className="flex h-full flex-col rounded-2xl border border-border bg-bg-elevated p-6 sm:p-8">
+            <div className="flex h-full flex-col rounded-none border border-border bg-bg-elevated p-6 sm:p-8">
               <h3 className="text-lg font-medium text-fg">Estimador de valor de canje</h3>
               <p className="mt-1 text-sm text-fg-muted">
                 Obtené un rango estimado al instante para tu vehículo actual.
@@ -208,7 +208,7 @@ export function FinanceToolsSection() {
               <div className="mt-auto pt-8">
                 {tradeEstimate ? (
                   <>
-                    <div className="rounded-xl bg-accent-soft p-5">
+                    <div className="rounded-none bg-accent-soft p-5">
                       <p className="font-mono text-sm uppercase sm:text-xs tracking-wider text-accent">
                         Rango estimado de canje
                       </p>

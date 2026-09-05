@@ -80,8 +80,8 @@ export function IntroSection() {
           <div className="grid grid-cols-1 gap-5 sm:grid-cols-2">
             {GUARANTEES.map((item, i) => (
               <Reveal key={item.title} delay={i * 0.08}>
-                <div className="flex gap-4 rounded-2xl border border-border bg-bg-elevated p-5 transition-colors hover:border-border-strong sm:p-6">
-                  <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-accent-soft text-accent">
+                <div className="flex gap-4 rounded-none border border-border bg-bg-elevated p-5 transition-colors hover:border-border-strong sm:p-6">
+                  <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-none bg-accent-soft text-accent">
                     <item.icon className="h-5 w-5" />
                   </div>
                   <div>

@@ -50,7 +50,7 @@ export function Button(props: ButtonAsButton | ButtonAsLink) {
     ...rest
   } = props;
 
-  const classes = `inline-flex items-center justify-center gap-2 rounded-xl font-medium tracking-tight transition-colors duration-150 focus-visible:outline-2 focus-visible:outline-accent focus-visible:outline-offset-2 disabled:opacity-40 disabled:pointer-events-none ${variantClasses[variant]} ${sizeClasses[size]} ${className}`;
+  const classes = `inline-flex items-center justify-center gap-2 rounded-none font-medium tracking-tight transition-colors duration-150 focus-visible:outline-2 focus-visible:outline-accent focus-visible:outline-offset-2 disabled:opacity-40 disabled:pointer-events-none ${variantClasses[variant]} ${sizeClasses[size]} ${className}`;
 
   if ("href" in props && props.href) {
     const { href, external } = rest as ButtonAsLink;

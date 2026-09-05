@@ -25,7 +25,7 @@ export function VehicleCard({
       animate={{ opacity: 1, y: 0 }}
       exit={{ opacity: 0, y: -8 }}
       transition={{ type: "spring", stiffness: 260, damping: 28 }}
-      className="group flex flex-col overflow-hidden rounded-2xl border border-border bg-bg-elevated transition-colors hover:border-border-strong"
+      className="group flex flex-col overflow-hidden rounded-none border border-border bg-bg-elevated transition-colors hover:border-border-strong"
     >
       <div className="relative aspect-[4/3] w-full overflow-hidden">
         <Image
@@ -72,7 +72,7 @@ export function VehicleCard({
           <button
             type="button"
             onClick={() => onInquire(vehicle.id)}
-            className="inline-flex items-center gap-1.5 rounded-lg px-3 py-2 text-sm font-medium text-accent transition-colors hover:bg-accent-soft focus-visible:outline-2 focus-visible:outline-accent"
+            className="inline-flex items-center gap-1.5 rounded-none px-3 py-2 text-sm font-medium text-accent transition-colors hover:bg-accent-soft focus-visible:outline-2 focus-visible:outline-accent"
           >
             Consultar
             <ArrowRightIcon className="h-3.5 w-3.5" />

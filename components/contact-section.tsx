@@ -29,7 +29,7 @@ const TIME_SLOTS = [
 ];
 
 const inputClasses =
-  "h-12 w-full rounded-xl border border-border-strong bg-bg-elevated px-4 text-sm text-fg outline-none transition-colors focus:border-accent";
+  "h-12 w-full rounded-none border border-border-strong bg-bg-elevated px-4 text-sm text-fg outline-none transition-colors focus:border-accent";
 
 type Errors = Partial<Record<"name" | "email" | "phone", string>>;
 
@@ -146,7 +146,7 @@ export function ContactSection() {
 
         <div className="mt-10 grid gap-6 lg:grid-cols-[1.5fr_1fr]">
           <Reveal delay={0.05}>
-            <div className="rounded-2xl border border-border bg-bg-elevated p-6 sm:p-8">
+            <div className="rounded-none border border-border bg-bg-elevated p-6 sm:p-8">
               <AnimatePresence mode="wait">
                 {status === "success" ? (
                   <motion.div
@@ -273,7 +273,7 @@ export function ContactSection() {
                           value={message}
                           onChange={(e) => setMessage(e.target.value)}
                           rows={4}
-                          className="w-full rounded-xl border border-border-strong bg-bg-elevated px-4 py-3 text-sm text-fg outline-none transition-colors focus:border-accent"
+                          className="w-full rounded-none border border-border-strong bg-bg-elevated px-4 py-3 text-sm text-fg outline-none transition-colors focus:border-accent"
                           placeholder="Contanos qué estás buscando…"
                         />
                       </label>
@@ -295,7 +295,7 @@ export function ContactSection() {
           </Reveal>
 
           <Reveal delay={0.1}>
-            <div className="flex h-full flex-col overflow-hidden rounded-2xl border border-border bg-bg-elevated">
+            <div className="flex h-full flex-col overflow-hidden rounded-none border border-border bg-bg-elevated">
               <div className="relative h-64 w-full">
                 <Image
                   src="https://images.unsplash.com/photo-1518987048-93e29699e79a"

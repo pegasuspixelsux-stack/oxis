@@ -109,7 +109,7 @@ export function InventorySection() {
             type="button"
             onClick={() => setFiltersOpen((v) => !v)}
             aria-expanded={filtersOpen}
-            className="mt-8 flex w-full items-center justify-between rounded-xl border border-border-strong bg-bg-elevated px-4 py-3 text-sm font-medium text-fg transition-colors hover:border-accent sm:w-auto sm:gap-3"
+            className="mt-8 flex w-full items-center justify-between rounded-none border border-border-strong bg-bg-elevated px-4 py-3 text-sm font-medium text-fg transition-colors hover:border-accent sm:w-auto sm:gap-3"
           >
             <span className="flex items-center gap-2">
               Filtros
@@ -190,7 +190,7 @@ export function InventorySection() {
               </AnimatePresence>
             </motion.div>
           ) : !loading ? (
-            <div className="flex flex-col items-center gap-3 rounded-2xl border border-dashed border-border-strong py-16 text-center">
+            <div className="flex flex-col items-center gap-3 rounded-none border border-dashed border-border-strong py-16 text-center">
               <AlertIcon className="h-8 w-8 text-fg-subtle" />
               <p className="text-fg-muted">
                 {filtersActive ? "Ningún vehículo coincide con tus filtros." : "Todavía no hay vehículos publicados."}
@@ -212,7 +212,7 @@ export function InventorySection() {
           <div className="mt-10 flex justify-center">
             <Link
               href="/inventory"
-              className="inline-flex items-center gap-2 rounded-xl border border-border-strong bg-bg-elevated px-5 py-3 text-sm font-medium text-fg transition-colors hover:border-accent hover:text-accent"
+              className="inline-flex items-center gap-2 rounded-none border border-border-strong bg-bg-elevated px-5 py-3 text-sm font-medium text-fg transition-colors hover:border-accent hover:text-accent"
             >
               {hasMore
                 ? `Ver los ${filtered.length} vehículos del inventario completo`
@@ -250,7 +250,7 @@ function FeaturedCarCard({ car }: { car: Car }) {
     >
       <Link
         href={`/inventory/${car.id}`}
-        className="group flex flex-col overflow-hidden rounded-2xl border border-border bg-bg-elevated transition-colors hover:border-border-strong"
+        className="group flex flex-col overflow-hidden rounded-none border border-border bg-bg-elevated transition-colors hover:border-border-strong"
       >
         <div className="relative aspect-[4/3] w-full overflow-hidden bg-bg">
           {cover && (
@@ -293,7 +293,7 @@ function FeaturedCarCard({ car }: { car: Car }) {
                 <span className="font-mono text-xl font-semibold text-fg">{car.price}</span>
               )}
             </div>
-            <span className="inline-flex items-center gap-1.5 rounded-lg px-3 py-2 text-sm font-medium text-accent transition-colors group-hover:bg-accent-soft">
+            <span className="inline-flex items-center gap-1.5 rounded-none px-3 py-2 text-sm font-medium text-accent transition-colors group-hover:bg-accent-soft">
               Ver ficha
               <ArrowRightIcon className="h-3.5 w-3.5" />
             </span>

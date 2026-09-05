@@ -78,7 +78,7 @@ export function SiteHeader() {
             aria-label={open ? "Cerrar menú" : "Abrir menú"}
             aria-expanded={open}
             onClick={() => setOpen((v) => !v)}
-            className="md:hidden inline-flex h-10 w-10 items-center justify-center rounded-lg border border-border-strong text-fg transition-colors hover:border-accent hover:text-accent"
+            className="md:hidden inline-flex h-10 w-10 items-center justify-center rounded-none border border-border-strong text-fg transition-colors hover:border-accent hover:text-accent"
           >
             {open ? <CloseIcon className="h-5 w-5" /> : <MenuIcon className="h-5 w-5" />}
           </button>
@@ -100,14 +100,14 @@ export function SiteHeader() {
                   key={link.href}
                   href={link.href}
                   onClick={() => setOpen(false)}
-                  className="rounded-lg px-3 py-3 text-base font-medium text-fg transition-colors hover:bg-bg-elevated"
+                  className="rounded-none px-3 py-3 text-base font-medium text-fg transition-colors hover:bg-bg-elevated"
                 >
                   {link.label}
                 </Link>
               ))}
               <a
                 href={telHref}
-                className="mt-2 inline-flex items-center gap-2 rounded-lg px-3 py-3 text-base font-medium text-accent"
+                className="mt-2 inline-flex items-center gap-2 rounded-none px-3 py-3 text-base font-medium text-accent"
               >
                 <PhoneIcon className="h-4 w-4" />
                 Llamar {settings.phoneNumber}
