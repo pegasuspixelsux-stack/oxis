@@ -110,19 +110,18 @@ function Hero({ heroImage, dealershipName }: { heroImage: string; dealershipName
 function GuaranteesStrip() {
   return (
     <section className="border-b-2 border-neutral-950">
-      <div className="mx-auto grid max-w-7xl grid-cols-1 px-4 sm:px-6 md:grid-cols-2 lg:grid-cols-4 lg:px-8">
-        {GUARANTEES.map((item) => (
-          <div
-            key={item.title}
-            className="-mt-0.5 -ml-0.5 flex flex-col gap-4 border-2 border-neutral-950 p-8 first:mt-0 first:ml-0"
-          >
-            <div className="flex h-12 w-12 items-center justify-center rounded-full border-2 border-neutral-950 bg-[var(--mini-accent)] text-white">
-              <item.icon className="h-5 w-5" />
+      <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+        <div className="grid grid-cols-1 gap-0.5 border-x-2 border-neutral-950 bg-neutral-950 md:grid-cols-2 lg:grid-cols-4">
+          {GUARANTEES.map((item) => (
+            <div key={item.title} className="flex flex-col gap-4 bg-white p-8">
+              <div className="flex h-12 w-12 items-center justify-center rounded-full border-2 border-neutral-950 bg-[var(--mini-accent)] text-white">
+                <item.icon className="h-5 w-5" />
+              </div>
+              <h3 className="text-sm font-extrabold uppercase tracking-wide">{item.title}</h3>
+              <p className="text-sm leading-relaxed text-neutral-600">{item.description}</p>
             </div>
-            <h3 className="text-sm font-extrabold uppercase tracking-wide">{item.title}</h3>
-            <p className="text-sm leading-relaxed text-neutral-600">{item.description}</p>
-          </div>
-        ))}
+          ))}
+        </div>
       </div>
     </section>
   );
