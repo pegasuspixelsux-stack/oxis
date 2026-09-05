@@ -4,11 +4,8 @@ import { motion } from "motion/react";
 import { Button } from "@/components/ui/button";
 import { Container } from "@/components/ui/container";
 import { ArrowRightIcon } from "@/components/icons";
-import { useSettings } from "@/components/settings-provider";
 
 export function HeroSection() {
-  const { settings } = useSettings();
-
   return (
     <section
       id="top"
@@ -20,7 +17,8 @@ export function HeroSection() {
           loop
           muted
           playsInline
-          poster={settings.heroBannerImageUrl}
+          preload="auto"
+          poster="/hero-images/coverr-the-rear-of-a-bmw-m4-7342-1080p-poster.jpg"
           className="absolute inset-0 h-full w-full object-cover"
         >
           <source
