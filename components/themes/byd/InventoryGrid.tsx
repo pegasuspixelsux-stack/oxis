@@ -1,6 +1,291 @@
-import type { InventoryListProps } from "@/components/themes/types";
+"use client";
 
-// Stub — replaced in the "InventoryGrid surface" commit.
-export default function InventoryGrid(_props: InventoryListProps) {
-  return null;
+import { useEffect, useMemo, useState } from "react";
+import { estimateListingPayment } from "@/lib/finance";
+import type { InventoryListProps } from "@/components/themes/types";
+import { BydShell } from "./ui/byd-shell";
+import { BydButton } from "./ui/byd-button";
+import { BydField, bydControlClass } from "./ui/byd-field";
+
+const PER_PAGE = 12;
+const FALLBACK_CAR_IMAGE =
+  "https://images.unsplash.com/photo-1552519507-da3b142c6e3d?auto=format&fit=crop&w=800&q=80";
+
+const SORT_OPTIONS = [
+  { value: "featured", label: "Orden de la colección" },
+  { value: "price-asc", label: "Precio: menor a mayor" },
+  { value: "price-desc", label: "Precio: mayor a menor" },
+  { value: "year-desc", label: "Año: más nuevo primero" },
+] as const;
+
+type SortValue = (typeof SORT_OPTIONS)[number]["value"];
+
+function numericPrice(price: string): number {
+  const n = parseInt(price.replace(/[^0-9]/g, ""), 10);
+  return Number.isFinite(n) ? n : 0;
+}
+
+function listingMonthly(price: string): number | null {
+  const numeric = numericPrice(price);
+  if (numeric <= 0) return null;
+  return estimateListingPayment(numeric);
+}
+
+export default function InventoryGrid({
+  loading,
+  availableMakes,
+  availableBodyStyles,
+  priceCeiling,
+  filterCars,
+  cars,
+}: InventoryListProps) {
+  const [search, setSearch] = useState("");
+  const [make, setMake] = useState("All");
+  const [bodyStyle, setBodyStyle] = useState("All");
+  const [maxPrice, setMaxPrice] = useState(() => Math.max(priceCeiling, 10000));
+  const [sort, setSort] = useState<SortValue>("featured");
+  const [page, setPage] = useState(1);
+
+  // Snap the price ceiling to the real inventory maximum once it arrives.
+  useEffect(() => {
+    if (cars.length > 0) setMaxPrice(Math.max(priceCeiling, 10000));
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [cars.length]);
+
+  // Any filter change resets pagination so a narrowed result set never
+  // strands the viewer on an empty page.
+  useEffect(() => {
+    setPage(1);
+  }, [search, make, bodyStyle, maxPrice, sort]);
+
+  const filtered = filterCars({
+    search,
+    make: make === "All" ? undefined : make,
+    bodyStyle: bodyStyle === "All" ? undefined : bodyStyle,
+    maxPrice,
+  });
+
+  const results = useMemo(() => {
+    const list = [...filtered];
+    if (sort === "price-asc") list.sort((a, b) => numericPrice(a.price) - numericPrice(b.price));
+    else if (sort === "price-desc")
+      list.sort((a, b) => numericPrice(b.price) - numericPrice(a.price));
+    else if (sort === "year-desc") list.sort((a, b) => b.year - a.year);
+    return list;
+  }, [filtered, sort]);
+
+  const totalPages = Math.max(1, Math.ceil(results.length / PER_PAGE));
+  const currentPage = Math.min(page, totalPages);
+  const visible = results.slice((currentPage - 1) * PER_PAGE, currentPage * PER_PAGE);
+
+  function resetFilters() {
+    setSearch("");
+    setMake("All");
+    setBodyStyle("All");
+    setMaxPrice(Math.max(priceCeiling, 10000));
+    setSort("featured");
+  }
+
+  return (
+    <BydShell>
+      <section className="mx-auto max-w-7xl px-4 py-14 sm:px-6 lg:px-8">
+        <div className="border-b border-[#0A1A2F]/10 pb-6">
+          <p className="font-[family-name:var(--font-byd-display)] text-[11px] font-semibold uppercase tracking-[0.28em] text-[var(--byd-accent)]">
+            Catálogo
+          </p>
+          <h1 className="mt-3 font-[family-name:var(--font-byd-display)] text-3xl font-bold tracking-tighter sm:text-4xl">
+            Especificaciones
+          </h1>
+          <p className="mt-2 text-sm text-[#1E2A38]/60">
+            {loading
+              ? "Cargando vehículos…"
+              : `${results.length} ${
+                  results.length === 1 ? "vehículo disponible" : "vehículos disponibles"
+                } · cada ficha, transparente`}
+          </p>
+        </div>
+
+        {/* Horizontal filter bar */}
+        <div className="mt-8 grid grid-cols-1 gap-4 border border-[#0A1A2F]/10 bg-[#F1F4F7] p-5 sm:grid-cols-2 lg:grid-cols-5">
+          <BydField label="Palabra clave">
+            <input
+              type="text"
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+              placeholder="Marca, modelo…"
+              className={bydControlClass}
+            />
+          </BydField>
+
+          <BydField label="Marca">
+            <select
+              value={make}
+              onChange={(e) => setMake(e.target.value)}
+              className={bydControlClass}
+            >
+              <option value="All">Todas</option>
+              {availableMakes.map((m) => (
+                <option key={m} value={m}>
+                  {m}
+                </option>
+              ))}
+            </select>
+          </BydField>
+
+          <BydField label="Carrocería">
+            <select
+              value={bodyStyle}
+              onChange={(e) => setBodyStyle(e.target.value)}
+              className={bydControlClass}
+            >
+              <option value="All">Todas</option>
+              {availableBodyStyles.map((b) => (
+                <option key={b} value={b}>
+                  {b}
+                </option>
+              ))}
+            </select>
+          </BydField>
+
+          <div>
+            <div className="flex items-center justify-between">
+              <span className="mb-1.5 block text-[11px] font-medium uppercase tracking-[0.18em] text-[#5A6B7D]">
+                Precio máximo
+              </span>
+              <span className="font-[family-name:var(--font-byd-display)] text-sm font-bold text-[var(--byd-accent)]">
+                ${maxPrice.toLocaleString("en-US")}
+              </span>
+            </div>
+            <input
+              type="range"
+              min={10000}
+              max={Math.max(priceCeiling, 10000)}
+              step={5000}
+              value={maxPrice}
+              onChange={(e) => setMaxPrice(Number(e.target.value))}
+              className="mt-2 w-full accent-[var(--byd-accent)]"
+            />
+          </div>
+
+          <BydField label="Ordenar">
+            <select
+              value={sort}
+              onChange={(e) => setSort(e.target.value as SortValue)}
+              className={bydControlClass}
+            >
+              {SORT_OPTIONS.map((o) => (
+                <option key={o.value} value={o.value}>
+                  {o.label}
+                </option>
+              ))}
+            </select>
+          </BydField>
+        </div>
+
+        {/* Results */}
+        <div className="mt-8">
+          {loading ? (
+            <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 xl:grid-cols-3">
+              {Array.from({ length: 6 }).map((_, i) => (
+                <div key={i} className="border border-[#0A1A2F]/10 bg-white" aria-hidden>
+                  <div className="aspect-[16/10] animate-pulse bg-[#0A1A2F]/5" />
+                  <div className="flex flex-col gap-3 p-5">
+                    <div className="h-4 w-3/4 animate-pulse bg-[#0A1A2F]/5" />
+                    <div className="h-3 w-full animate-pulse bg-[#0A1A2F]/5" />
+                    <div className="h-6 w-24 animate-pulse bg-[#0A1A2F]/5" />
+                  </div>
+                </div>
+              ))}
+            </div>
+          ) : visible.length === 0 ? (
+            <div className="flex flex-col items-start gap-4 border border-[#0A1A2F]/10 bg-white p-8">
+              <span className="inline-block h-1.5 w-10 bg-gradient-to-r from-[var(--byd-accent)] to-[#00B4D8]" />
+              <p className="font-[family-name:var(--font-byd-display)] text-base font-bold tracking-tight">
+                Ningún vehículo coincide con la búsqueda.
+              </p>
+              <p className="text-sm text-[#1E2A38]/60">
+                Probá ampliar el rango de precio o quitar algún filtro.
+              </p>
+              <BydButton onClick={resetFilters} variant="outline">
+                Limpiar filtros
+              </BydButton>
+            </div>
+          ) : (
+            <>
+              <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 xl:grid-cols-3">
+                {visible.map((car) => {
+                  const image = car.images?.[0] || car.img || FALLBACK_CAR_IMAGE;
+                  const monthly = listingMonthly(car.price);
+                  return (
+                    <article
+                      key={car.id}
+                      className="flex flex-col border border-[#0A1A2F]/10 bg-white transition-colors hover:border-[var(--byd-accent)]"
+                    >
+                      <div className="relative aspect-[16/10] overflow-hidden bg-[#E8ECF1]">
+                        {/* eslint-disable-next-line @next/next/no-img-element -- arbitrary Storage/Unsplash URL */}
+                        <img src={image} alt={car.title} className="h-full w-full object-cover" />
+                        <span className="absolute left-0 top-0 bg-white/95 px-2.5 py-1 font-[family-name:var(--font-byd-display)] text-[10px] font-semibold uppercase tracking-[0.18em] text-[#0A1A2F]">
+                          {car.make}
+                        </span>
+                        <span className="absolute bottom-0 right-0 bg-[var(--byd-accent)] px-2 py-0.5 font-[family-name:var(--font-byd-display)] text-[10px] font-semibold uppercase tracking-wide text-white">
+                          {car.year}
+                        </span>
+                      </div>
+                      <div className="flex flex-1 flex-col p-5">
+                        <h3 className="text-sm font-semibold leading-snug">{car.title}</h3>
+                        <p className="mt-3 border-t border-[#0A1A2F]/10 pt-3 text-xs uppercase tracking-[0.12em] text-[#5A6B7D]">
+                          {car.year} · {car.mileage || "—"} · {car.drivetrain || "—"}
+                        </p>
+                        <div className="mt-auto flex items-end justify-between pt-4">
+                          <div>
+                            <span className="block font-[family-name:var(--font-byd-display)] text-base font-bold">
+                              {car.price}
+                            </span>
+                            {monthly && (
+                              <span className="text-[11px] text-[var(--byd-accent)]">
+                                ${Math.round(monthly).toLocaleString("en-US")}/mes
+                              </span>
+                            )}
+                          </div>
+                          <BydButton
+                            href={`/inventory/${car.id}`}
+                            variant="outline"
+                            className="!px-3 !py-1.5 !text-[11px]"
+                          >
+                            Ver ficha
+                          </BydButton>
+                        </div>
+                      </div>
+                    </article>
+                  );
+                })}
+              </div>
+
+              {totalPages > 1 && (
+                <div className="mt-10 flex flex-wrap items-center justify-center gap-2 font-[family-name:var(--font-byd-display)]">
+                  {Array.from({ length: totalPages }).map((_, i) => {
+                    const n = i + 1;
+                    return (
+                      <button
+                        key={n}
+                        type="button"
+                        onClick={() => setPage(n)}
+                        className={`h-10 w-10 rounded-none border text-sm font-semibold transition-colors ${
+                          n === currentPage
+                            ? "border-[var(--byd-accent)] bg-[var(--byd-accent)] text-white"
+                            : "border-[#0A1A2F]/20 bg-white text-[#1E2A38]/60 hover:border-[var(--byd-accent)]"
+                        }`}
+                      >
+                        {n}
+                      </button>
+                    );
+                  })}
+                </div>
+              )}
+            </>
+          )}
+        </div>
+      </section>
+    </BydShell>
+  );
 }
