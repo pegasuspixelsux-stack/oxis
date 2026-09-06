@@ -26,6 +26,8 @@ const BRAND_THEME_LABELS: Record<(typeof BRAND_THEMES)[number], string> = {
   difor: "Difor",
   voituret: "Voituret",
   carmax: "CarMax",
+  "renato-conti": "Renato Conti Black Edition",
+  "gustavo-villasuso": "Gustavo Villasuso",
 };
 
 function newStaffId(): string {

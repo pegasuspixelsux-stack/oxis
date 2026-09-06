@@ -86,4 +86,26 @@ export const THEMES: Record<BrandTheme, ThemeSurfaces> = {
       loading: () => <ThemeSkeleton surface="detail" />,
     }),
   },
+  "renato-conti": {
+    Home: dynamic(() => import("./renato-conti/HomeHero"), {
+      loading: () => <ThemeSkeleton surface="home" />,
+    }),
+    InventoryList: dynamic(() => import("./renato-conti/InventoryGrid"), {
+      loading: () => <ThemeSkeleton surface="list" />,
+    }),
+    VehicleDetail: dynamic(() => import("./renato-conti/DetailView"), {
+      loading: () => <ThemeSkeleton surface="detail" />,
+    }),
+  },
+  "gustavo-villasuso": {
+    Home: dynamic(() => import("./gustavo-villasuso/HomeHero"), {
+      loading: () => <ThemeSkeleton surface="home" />,
+    }),
+    InventoryList: dynamic(() => import("./gustavo-villasuso/InventoryGrid"), {
+      loading: () => <ThemeSkeleton surface="list" />,
+    }),
+    VehicleDetail: dynamic(() => import("./gustavo-villasuso/DetailView"), {
+      loading: () => <ThemeSkeleton surface="detail" />,
+    }),
+  },
 };
