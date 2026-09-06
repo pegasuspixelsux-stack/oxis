@@ -28,6 +28,7 @@ const BRAND_THEME_LABELS: Record<(typeof BRAND_THEMES)[number], string> = {
   carmax: "CarMax",
   "renato-conti": "Renato Conti Black Edition",
   "gustavo-villasuso": "Gustavo Villasuso",
+  byd: "BYD",
 };
 
 function newStaffId(): string {

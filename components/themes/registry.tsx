@@ -108,4 +108,15 @@ export const THEMES: Record<BrandTheme, ThemeSurfaces> = {
       loading: () => <ThemeSkeleton surface="detail" />,
     }),
   },
+  byd: {
+    Home: dynamic(() => import("./byd/HomeHero"), {
+      loading: () => <ThemeSkeleton surface="home" />,
+    }),
+    InventoryList: dynamic(() => import("./byd/InventoryGrid"), {
+      loading: () => <ThemeSkeleton surface="list" />,
+    }),
+    VehicleDetail: dynamic(() => import("./byd/DetailView"), {
+      loading: () => <ThemeSkeleton surface="detail" />,
+    }),
+  },
 };
