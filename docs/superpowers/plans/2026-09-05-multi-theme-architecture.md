@@ -1562,3 +1562,87 @@ Plan complete and saved to `docs/superpowers/plans/2026-09-05-multi-theme-archit
 2. **Inline Execution** — Execute tasks in this session using executing-plans, batch execution with checkpoints.
 
 Which approach?
+
+---
+
+# ADDENDUM — 3 additional brand themes (2026-09-05, mid-execution)
+
+The user requested three more themes after Tasks 1–22 landed. The architecture is
+unchanged; this is the sanctioned "add a brand" path applied three times.
+
+**New brands:** `rs-motors`, `difor`, `voituret` (tuple order after `fiat`).
+
+| Brand | Direction | Corner rule |
+|---|---|---|
+| `rs-motors` | Motorsport. `#000000` carbon bg, `#EE0405` red accent (motorsport blue as optional secondary), sharp angular display type, high-contrast editorial. Surfaces emphasise technical metrics: horsepower, displacement, transmission, "track inspection" status. | `rounded-none` everywhere |
+| `difor` | Trusted professional multi-brand dealership. Clean, structured. Industrial blue accent (`#1E4FA3`-ish). Structured inventory grids, clear financing module, "inspección verificada" badges. | `rounded-none` everywhere |
+| `voituret` | Ultra-luxury boutique editorial. Refined serif headlines, generous whitespace, minimalist framing, restrained palette (ivory/charcoal + one metallic accent). Curation-forward copy. | `rounded-none` everywhere |
+
+**Component filenames (user-mandated for the new folders):**
+`HomeHero.tsx`, `InventoryGrid.tsx`, `DetailView.tsx` — plus `fonts.ts` and `ui/` like
+mini/fiat. The registry maps surface keys to these names:
+`{ Home: import("./rs-motors/HomeHero"), InventoryList: import("./rs-motors/InventoryGrid"), VehicleDetail: import("./rs-motors/DetailView") }`.
+
+**Shared-core edits (all sanctioned by the Change Boundaries "adding a brand" clause):**
+- `lib/themes.ts`: `BRAND_THEMES = ["bmw","mini","fiat","rs-motors","difor","voituret"] as const`.
+- `components/themes/registry.tsx`: 3 new `THEMES` entries via `next/dynamic`.
+- `app/dashboard/settings/page.tsx`: `BRAND_THEME_LABELS` gains
+  `"rs-motors": "RS Motors", "difor": "Difor", "voituret": "Voituret"`. The `<option>`
+  list is already generated from `BRAND_THEMES`, so no other select change.
+- `DEFAULT_SETTINGS.brandTheme` stays `"bmw"`.
+- `resolveBrandTheme` unchanged (its `includes` check covers the new values automatically).
+
+**Same hard rules as mini/fiat:** no `firebase` / `@/lib/firebase` / `@/lib/db/*` / `/api/*`
+imports; data via props + `useLeadForm`; no cross-theme imports (`GUARANTEES` /
+`DEFAULT_FEATURES` copied as literals); isolation to the theme's own folder; explicit
+Tailwind colors; Tailwind v4 `[var(--x)]` CSS-var syntax; Spanish copy; `"use client"` +
+`export default function` on the 3 surfaces; no dead code.
+
+**Verification:** `npm run build` PASS per commit; controller walkthrough per brand via
+`.superpowers/sdd/2026-09-05-multi-theme-architecture/set-brand-theme.mjs <brand>`.
+
+**Task breakdown:**
+- Task X1 — shared-core extension + 9 stub surfaces (1 dispatch).
+- Task X2 — `rs-motors` theme (fonts + ui + 3 surfaces) (1 dispatch).
+- Task X3 — `difor` theme (1 dispatch).
+- Task X4 — `voituret` theme (1 dispatch).
+- Task X5 — final whole-branch review (covers the entire branch: Tasks 1–22 + X1–X4).
+
+---
+
+# ADDENDUM 2 — `carmax` marketplace theme (2026-09-06, mid-execution)
+
+7th brand. `BRAND_THEMES` final: `["bmw","mini","fiat","rs-motors","difor","voituret","carmax"]`.
+
+**`carmax` — high-volume generalist marketplace / wholesale-style dealership search.**
+- Purpose-built for browsing lots of inventory fast. Functional over decorative.
+- `rounded-none` on every card, button, input (hard rule).
+- **`HomeHero.tsx` (the `Home` surface) is search-first:** the hero is an immediate,
+  functional multi-field search bar + quick filters (make / body / price / keyword) —
+  NOT a curated statement. Below it: featured/paginated results (12 or 16 per page).
+- **Filters horizontal, ABOVE the grid on desktop** (no left sidebar). On mobile they
+  stack on top of the listings.
+- **`InventoryGrid.tsx`:** the full paginated browse — same horizontal-filter-above-grid
+  layout, 12 or 16 per page, sort control.
+- **Below the inventory (on the Home surface):** a compact Trade-In / Permuta valuation
+  prompt module, a Financial Calculator widget, then a "Quiénes somos / Por qué comprar
+  con nosotros" value-proposition block followed by a direct CTA.
+- **`DetailView.tsx`:** a straightforward, information-dense listing detail — gallery,
+  spec table, price + monthly estimate, features, inquiry form (`leadForm`), WhatsApp.
+- Palette/type: a practical marketplace look — a clear high-contrast accent (e.g. a
+  strong blue or orange), a plain workhorse sans, dense but legible. Distinct from the
+  other six (not motorsport, not boutique, not the trust-forward `difor` — this is a
+  busy classifieds/marketplace feel).
+
+**Same hard rules** as rs-motors/difor/voituret (no data-layer or cross-theme imports;
+data via props + `useLeadForm`; `GUARANTEES`/`DEFAULT_FEATURES` copied literals;
+explicit Tailwind colors; v4 `[var(--x)]` CSS-var syntax; Spanish; `"use client"` +
+`export default function` on the 3 surfaces; no dead code).
+
+**Shared-core edits (sanctioned "add a brand"):** `lib/themes.ts` tuple +=`"carmax"`;
+`components/themes/registry.tsx` +1 entry (`Home→./carmax/HomeHero`,
+`InventoryList→./carmax/InventoryGrid`, `VehicleDetail→./carmax/DetailView`);
+`app/dashboard/settings/page.tsx` `BRAND_THEME_LABELS` +=`carmax: "CarMax"`.
+
+**Task X5** — one dispatch: the 3 shared edits + the full `carmax` theme
+(`fonts.ts` + `ui/` + `HomeHero` + `InventoryGrid` + `DetailView`). Then review + walkthrough.

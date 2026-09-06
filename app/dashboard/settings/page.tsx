@@ -12,10 +12,21 @@ import {
   type QualificationQuestion,
 } from "@/lib/db/settings";
 import { PlusIcon, TrashIcon, ArrowUpIcon, ArrowDownIcon } from "@/components/icons";
+import { BRAND_THEMES } from "@/lib/themes";
 
 const inputClasses =
   "w-full rounded-xl border border-black/10 bg-[#F5F5F7] px-3.5 py-2.5 text-sm text-[#1D1D1F] outline-none transition-colors focus:border-[#0071E3] focus:bg-white";
 const labelClasses = "mb-1.5 block text-xs font-medium text-[#6E6E73]";
+
+const BRAND_THEME_LABELS: Record<(typeof BRAND_THEMES)[number], string> = {
+  bmw: "BMW",
+  mini: "MINI",
+  fiat: "Fiat",
+  "rs-motors": "RS Motors",
+  difor: "Difor",
+  voituret: "Voituret",
+  carmax: "CarMax",
+};
 
 function newStaffId(): string {
   return typeof crypto !== "undefined" && "randomUUID" in crypto
@@ -152,6 +163,23 @@ export default function DashboardSettingsPage() {
 
       <form onSubmit={handleSubmit} className="space-y-6">
         <div className="grid grid-cols-1 gap-6 rounded-2xl border border-black/[0.06] bg-white p-6 shadow-[0_1px_2px_rgba(0,0,0,0.04)] sm:grid-cols-2">
+          <div className="sm:col-span-2">
+            <label className={labelClasses}>Tema de marca (sitio público)</label>
+            <select
+              value={form.brandTheme}
+              onChange={(e) => update("brandTheme", e.target.value as typeof form.brandTheme)}
+              className={inputClasses}
+            >
+              {BRAND_THEMES.map((t) => (
+                <option key={t} value={t}>
+                  {BRAND_THEME_LABELS[t]}
+                </option>
+              ))}
+            </select>
+            <p className="mt-1 text-[11px] text-[#8E8E93]">
+              Cambia por completo el diseño de la página pública, el inventario y las fichas.
+            </p>
+          </div>
           <div>
             <label className={labelClasses}>Nombre del concesionario</label>
             <input

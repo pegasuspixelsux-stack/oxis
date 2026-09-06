@@ -1,10 +1,10 @@
 "use client";
 
 import { useMemo, useState, type ReactNode } from "react";
-import { Container } from "@/components/ui/container";
+import { Container } from "@/components/themes/bmw/ui/container";
 import { Reveal } from "@/components/reveal";
-import { Button } from "@/components/ui/button";
-import { PillGroup } from "@/components/ui/pill-group";
+import { Button } from "@/components/themes/bmw/ui/button";
+import { PillGroup } from "@/components/themes/bmw/ui/pill-group";
 import { useShowroom } from "@/components/showroom-context";
 import { vehicles, formatPrice } from "@/lib/vehicles";
 import { monthlyPayment, estimateTradeInRange, type Condition } from "@/lib/finance";

@@ -1,8 +1,8 @@
 "use client";
 
 import { motion } from "motion/react";
-import { Button } from "@/components/ui/button";
-import { Container } from "@/components/ui/container";
+import { Button } from "@/components/themes/bmw/ui/button";
+import { Container } from "@/components/themes/bmw/ui/container";
 import { ArrowRightIcon } from "@/components/icons";
 
 export function HeroSection() {

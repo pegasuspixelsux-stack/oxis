@@ -8,9 +8,9 @@ import { collection, getDocs, orderBy, query } from "firebase/firestore";
 import { db } from "@/lib/firebase";
 import { CARS_COLLECTION, type Car } from "@/lib/db/cars";
 import { estimateListingPayment } from "@/lib/finance";
-import { Container } from "@/components/ui/container";
+import { Container } from "@/components/themes/bmw/ui/container";
 import { Reveal } from "@/components/reveal";
-import { FilterSelect } from "@/components/inventory/filter-select";
+import { FilterSelect } from "@/components/themes/bmw/inventory/filter-select";
 import { AlertIcon, ChevronDownIcon, ArrowRightIcon, DrivetrainIcon, TransmissionIcon } from "@/components/icons";
 
 const ALL = "all";
