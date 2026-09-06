@@ -1607,3 +1607,42 @@ Tailwind colors; Tailwind v4 `[var(--x)]` CSS-var syntax; Spanish copy; `"use cl
 - Task X3 — `difor` theme (1 dispatch).
 - Task X4 — `voituret` theme (1 dispatch).
 - Task X5 — final whole-branch review (covers the entire branch: Tasks 1–22 + X1–X4).
+
+---
+
+# ADDENDUM 2 — `carmax` marketplace theme (2026-09-06, mid-execution)
+
+7th brand. `BRAND_THEMES` final: `["bmw","mini","fiat","rs-motors","difor","voituret","carmax"]`.
+
+**`carmax` — high-volume generalist marketplace / wholesale-style dealership search.**
+- Purpose-built for browsing lots of inventory fast. Functional over decorative.
+- `rounded-none` on every card, button, input (hard rule).
+- **`HomeHero.tsx` (the `Home` surface) is search-first:** the hero is an immediate,
+  functional multi-field search bar + quick filters (make / body / price / keyword) —
+  NOT a curated statement. Below it: featured/paginated results (12 or 16 per page).
+- **Filters horizontal, ABOVE the grid on desktop** (no left sidebar). On mobile they
+  stack on top of the listings.
+- **`InventoryGrid.tsx`:** the full paginated browse — same horizontal-filter-above-grid
+  layout, 12 or 16 per page, sort control.
+- **Below the inventory (on the Home surface):** a compact Trade-In / Permuta valuation
+  prompt module, a Financial Calculator widget, then a "Quiénes somos / Por qué comprar
+  con nosotros" value-proposition block followed by a direct CTA.
+- **`DetailView.tsx`:** a straightforward, information-dense listing detail — gallery,
+  spec table, price + monthly estimate, features, inquiry form (`leadForm`), WhatsApp.
+- Palette/type: a practical marketplace look — a clear high-contrast accent (e.g. a
+  strong blue or orange), a plain workhorse sans, dense but legible. Distinct from the
+  other six (not motorsport, not boutique, not the trust-forward `difor` — this is a
+  busy classifieds/marketplace feel).
+
+**Same hard rules** as rs-motors/difor/voituret (no data-layer or cross-theme imports;
+data via props + `useLeadForm`; `GUARANTEES`/`DEFAULT_FEATURES` copied literals;
+explicit Tailwind colors; v4 `[var(--x)]` CSS-var syntax; Spanish; `"use client"` +
+`export default function` on the 3 surfaces; no dead code).
+
+**Shared-core edits (sanctioned "add a brand"):** `lib/themes.ts` tuple +=`"carmax"`;
+`components/themes/registry.tsx` +1 entry (`Home→./carmax/HomeHero`,
+`InventoryList→./carmax/InventoryGrid`, `VehicleDetail→./carmax/DetailView`);
+`app/dashboard/settings/page.tsx` `BRAND_THEME_LABELS` +=`carmax: "CarMax"`.
+
+**Task X5** — one dispatch: the 3 shared edits + the full `carmax` theme
+(`fonts.ts` + `ui/` + `HomeHero` + `InventoryGrid` + `DetailView`). Then review + walkthrough.
