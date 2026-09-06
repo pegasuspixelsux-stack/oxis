@@ -21,7 +21,8 @@ const FOOTER_LINKS = [
 ];
 
 // byd page shell: a bright, airy high-tech canvas — crisp white with cool
-// slate sections, a thin light top bar and a modern column footer. The
+// slate sections, a solid black top bar (high-contrast white text) and a
+// modern column footer. The
 // brand accent CSS variable (electric blue) is set once here so every
 // descendant primitive (BydButton "solid" gradient, BydField focus border,
 // spec-tile highlights) can read `var(--byd-accent)`.
@@ -40,11 +41,11 @@ export function BydShell({ children }: { children: ReactNode }) {
       className={`${bydFontClass} flex min-h-screen flex-col bg-white font-[family-name:var(--font-byd-sans)] text-[#0A1A2F]`}
       style={{ "--byd-accent": "#0A84FF" } as CSSProperties}
     >
-      <header className="sticky top-0 z-50 border-b border-[#0A1A2F]/10 bg-white/90 backdrop-blur">
+      <header className="sticky top-0 z-50 border-b border-white/10 bg-black text-white">
         <div className="mx-auto flex h-16 max-w-7xl items-center justify-between px-4 sm:px-6 lg:px-8">
           <Link
             href="#top"
-            className="flex items-center gap-2.5 font-[family-name:var(--font-byd-display)] text-lg font-bold tracking-tight"
+            className="flex items-center gap-2.5 font-[family-name:var(--font-byd-display)] text-lg font-bold tracking-tight text-white"
           >
             <span className="inline-block h-2.5 w-2.5 shrink-0 bg-gradient-to-br from-[var(--byd-accent)] to-[#00B4D8]" />
             {settings.dealershipName}
@@ -55,7 +56,7 @@ export function BydShell({ children }: { children: ReactNode }) {
               <Link
                 key={link.href}
                 href={link.href}
-                className="text-[#1E2A38]/70 transition-colors hover:text-[var(--byd-accent)]"
+                className="text-white/70 transition-colors hover:text-[#00B4D8]"
               >
                 {link.label}
               </Link>
@@ -65,7 +66,7 @@ export function BydShell({ children }: { children: ReactNode }) {
           <div className="flex items-center gap-3">
             <Link
               href="/dashboard"
-              className="hidden rounded-none border border-[#0A1A2F]/15 px-3.5 py-2 text-sm font-medium text-[#0A1A2F] transition-colors hover:border-[var(--byd-accent)] hover:text-[var(--byd-accent)] sm:inline-flex"
+              className="hidden rounded-none border border-white/25 px-3.5 py-2 text-sm font-medium text-white transition-colors hover:border-[#00B4D8] hover:text-[#00B4D8] sm:inline-flex"
             >
               Panel
             </Link>
