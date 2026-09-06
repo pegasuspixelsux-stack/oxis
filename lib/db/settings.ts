@@ -22,6 +22,8 @@ export type QualificationQuestion = {
   order: number;
 };
 
+export type BydHeroMediaType = "image" | "video";
+
 export type DealershipSettings = {
   dealershipName: string;
   address: string;
@@ -33,6 +35,12 @@ export type DealershipSettings = {
   qualificationQuestions: QualificationQuestion[];
   agenteGreeting: string;
   brandTheme: BrandTheme;
+  // BYD theme only — its home hero is a full-bleed background. The admin
+  // picks image or video and supplies the URL in Configuración; every
+  // other theme ignores these fields.
+  bydHeroMediaType: BydHeroMediaType;
+  bydHeroImageUrl: string;
+  bydHeroVideoUrl: string;
 };
 
 // The default qualification flow the Agente concierge widget walks a
@@ -65,4 +73,7 @@ export const DEFAULT_SETTINGS: DealershipSettings = {
   agenteGreeting:
     "¡Hola! 👋 Soy tu asesor comercial virtual. Estoy para ayudarte a encontrar el auto ideal — empecemos.",
   brandTheme: "bmw",
+  bydHeroMediaType: "image",
+  bydHeroImageUrl: "https://images.unsplash.com/photo-1493238792000-8113da705763",
+  bydHeroVideoUrl: "",
 };

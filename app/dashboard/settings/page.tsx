@@ -256,6 +256,77 @@ export default function DashboardSettingsPage() {
         </div>
 
         <div className="rounded-2xl border border-black/[0.06] bg-white p-6 shadow-[0_1px_2px_rgba(0,0,0,0.04)]">
+          <div>
+            <h2 className="text-sm font-semibold text-[#1D1D1F]">Hero — tema BYD</h2>
+            <p className="mt-0.5 text-xs text-[#6E6E73]">
+              Fondo a pantalla completa del hero en la página de inicio. Solo aplica cuando el
+              tema de marca activo es BYD.
+            </p>
+          </div>
+
+          <div className="mt-4 grid grid-cols-1 gap-4 sm:grid-cols-2">
+            <div>
+              <label className={labelClasses}>Tipo de fondo</label>
+              <select
+                value={form.bydHeroMediaType}
+                onChange={(e) =>
+                  update("bydHeroMediaType", e.target.value as typeof form.bydHeroMediaType)
+                }
+                className={inputClasses}
+              >
+                <option value="image">Imagen</option>
+                <option value="video">Video</option>
+              </select>
+            </div>
+
+            {form.bydHeroMediaType === "image" ? (
+              <div className="sm:col-span-2">
+                <label className={labelClasses}>URL de la imagen de fondo</label>
+                {form.bydHeroImageUrl && (
+                  // eslint-disable-next-line @next/next/no-img-element -- preview of an arbitrary URL
+                  <img
+                    src={form.bydHeroImageUrl}
+                    alt="Vista previa del fondo BYD"
+                    className="mb-2 h-32 w-full rounded-xl border border-black/[0.06] object-cover"
+                  />
+                )}
+                <input
+                  type="text"
+                  placeholder="https://images.unsplash.com/…"
+                  value={form.bydHeroImageUrl}
+                  onChange={(e) => update("bydHeroImageUrl", e.target.value)}
+                  className={inputClasses}
+                />
+              </div>
+            ) : (
+              <div className="sm:col-span-2">
+                <label className={labelClasses}>URL del video de fondo (MP4)</label>
+                {form.bydHeroVideoUrl && (
+                  <video
+                    src={form.bydHeroVideoUrl}
+                    muted
+                    loop
+                    playsInline
+                    autoPlay
+                    className="mb-2 h-32 w-full rounded-xl border border-black/[0.06] object-cover"
+                  />
+                )}
+                <input
+                  type="text"
+                  placeholder="https://… .mp4  o  /hero-images/mi-video.mp4"
+                  value={form.bydHeroVideoUrl}
+                  onChange={(e) => update("bydHeroVideoUrl", e.target.value)}
+                  className={inputClasses}
+                />
+                <p className="mt-1 text-[11px] text-[#8E8E93]">
+                  Se reproduce en silencio y en bucle. Usá un MP4 optimizado (H.264, ~1080p).
+                </p>
+              </div>
+            )}
+          </div>
+        </div>
+
+        <div className="rounded-2xl border border-black/[0.06] bg-white p-6 shadow-[0_1px_2px_rgba(0,0,0,0.04)]">
           <div className="flex items-center justify-between">
             <div>
               <h2 className="text-sm font-semibold text-[#1D1D1F]">Equipo</h2>

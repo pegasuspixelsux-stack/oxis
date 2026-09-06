@@ -58,9 +58,17 @@ export default function HomeHero({ loading, filterCars }: HomeProps) {
   const { settings } = useSettings();
   const featured = filterCars({}).slice(0, 6);
 
+  const videoUrl = settings.bydHeroVideoUrl?.trim();
+  const useVideo = settings.bydHeroMediaType === "video" && Boolean(videoUrl);
+
   return (
     <BydShell>
-      <Hero heroImage={settings.heroBannerImageUrl} dealershipName={settings.dealershipName} />
+      <Hero
+        useVideo={useVideo}
+        videoUrl={videoUrl ?? ""}
+        imageUrl={settings.bydHeroImageUrl || settings.heroBannerImageUrl}
+        dealershipName={settings.dealershipName}
+      />
       <SpecCalloutBand />
       <CollectionGrid cars={featured} loading={loading} />
       <FinanceBlock />
@@ -69,19 +77,60 @@ export default function HomeHero({ loading, filterCars }: HomeProps) {
   );
 }
 
-function Hero({ heroImage, dealershipName }: { heroImage: string; dealershipName: string }) {
+function Hero({
+  useVideo,
+  videoUrl,
+  imageUrl,
+  dealershipName,
+}: {
+  useVideo: boolean;
+  videoUrl: string;
+  imageUrl: string;
+  dealershipName: string;
+}) {
   return (
-    <section className="relative overflow-hidden border-b border-[#0A1A2F]/10 bg-gradient-to-b from-white via-white to-[#F1F4F7]">
-      <div className="mx-auto grid max-w-7xl grid-cols-1 gap-12 px-4 py-20 sm:px-6 sm:py-24 lg:grid-cols-2 lg:items-center lg:px-8">
-        <div>
-          <p className="flex items-center gap-2 font-[family-name:var(--font-byd-display)] text-[11px] font-semibold uppercase tracking-[0.28em] text-[var(--byd-accent)]">
+    <section className="relative isolate flex min-h-[88vh] items-center overflow-hidden border-b border-[#0A1A2F]/10 bg-[#0A1A2F]">
+      {/* full-bleed background media */}
+      <div className="absolute inset-0 -z-10">
+        {useVideo ? (
+          <video
+            key={videoUrl}
+            className="h-full w-full object-cover"
+            src={videoUrl}
+            poster={imageUrl || undefined}
+            autoPlay
+            muted
+            loop
+            playsInline
+          />
+        ) : (
+          <Image
+            src={imageUrl}
+            alt={`Showroom de ${dealershipName}`}
+            fill
+            priority
+            sizes="100vw"
+            className="object-cover"
+          />
+        )}
+        {/* scrim: heavier on the left where the copy sits, clearing to the
+            right so the image/video reads as a real backdrop */}
+        <div className="absolute inset-0 bg-gradient-to-r from-[#05101F]/80 via-[#05101F]/40 to-transparent" />
+        <div className="absolute inset-0 bg-gradient-to-t from-[#05101F]/45 via-transparent to-transparent" />
+      </div>
+
+      <span className="absolute inset-x-0 top-0 h-1 bg-gradient-to-r from-[var(--byd-accent)] to-[#00B4D8]" />
+
+      <div className="mx-auto w-full max-w-7xl px-4 py-24 sm:px-6 lg:px-8">
+        <div className="max-w-xl text-white">
+          <p className="flex items-center gap-2 font-[family-name:var(--font-byd-display)] text-[11px] font-semibold uppercase tracking-[0.28em] text-[#4FC4E8]">
             <span className="inline-block h-1.5 w-8 bg-gradient-to-r from-[var(--byd-accent)] to-[#00B4D8]" />
             Movilidad eléctrica
           </p>
-          <h1 className="mt-6 font-[family-name:var(--font-byd-display)] text-5xl font-bold leading-[1.03] tracking-tighter sm:text-6xl">
+          <h1 className="mt-6 font-[family-name:var(--font-byd-display)] text-5xl font-bold leading-[1.03] tracking-tighter sm:text-6xl lg:text-7xl">
             Tecnología que se maneja sola
           </h1>
-          <p className="mt-6 max-w-md text-base leading-relaxed text-[#1E2A38]/65">
+          <p className="mt-6 max-w-md text-base leading-relaxed text-white/80">
             Cada ficha, transparente. Especificaciones reales, cuota calculada y una compra sin
             fricción. El futuro se prueba manejando.
           </p>
@@ -90,22 +139,14 @@ function Hero({ heroImage, dealershipName }: { heroImage: string; dealershipName
               Ver la colección
               <ArrowRightIcon className="h-4 w-4" />
             </BydButton>
-            <BydButton href="#rendimiento" variant="outline">
+            <BydButton
+              href="#rendimiento"
+              variant="outline"
+              className="!border-white/40 !bg-transparent !text-white hover:!border-[#00B4D8] hover:!text-[#00B4D8]"
+            >
               Rendimiento y eficiencia
             </BydButton>
           </div>
-        </div>
-
-        <div className="relative aspect-square w-full border border-[var(--byd-accent)]/30 bg-[#E8ECF1]">
-          <span className="absolute inset-x-0 top-0 z-10 h-1 bg-gradient-to-r from-[var(--byd-accent)] to-[#00B4D8]" />
-          <Image
-            src={heroImage}
-            alt={`Showroom de ${dealershipName}`}
-            fill
-            priority
-            sizes="(min-width: 1024px) 50vw, 100vw"
-            className="object-cover"
-          />
         </div>
       </div>
     </section>
