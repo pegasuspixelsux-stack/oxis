@@ -25,6 +25,7 @@ const BRAND_THEME_LABELS: Record<(typeof BRAND_THEMES)[number], string> = {
   "rs-motors": "RS Motors",
   difor: "Difor",
   voituret: "Voituret",
+  carmax: "CarMax",
 };
 
 function newStaffId(): string {

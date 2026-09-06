@@ -75,4 +75,15 @@ export const THEMES: Record<BrandTheme, ThemeSurfaces> = {
       loading: () => <ThemeSkeleton surface="detail" />,
     }),
   },
+  carmax: {
+    Home: dynamic(() => import("./carmax/HomeHero"), {
+      loading: () => <ThemeSkeleton surface="home" />,
+    }),
+    InventoryList: dynamic(() => import("./carmax/InventoryGrid"), {
+      loading: () => <ThemeSkeleton surface="list" />,
+    }),
+    VehicleDetail: dynamic(() => import("./carmax/DetailView"), {
+      loading: () => <ThemeSkeleton surface="detail" />,
+    }),
+  },
 };
