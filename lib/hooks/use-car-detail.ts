@@ -31,7 +31,10 @@ export function useCarDetail(id: string | undefined) {
         }
       })
       .catch((err) => {
-        if (!cancelled) console.error("[use-car-detail] failed to load car", err);
+        if (!cancelled) {
+          console.error("[use-car-detail] failed to load car", err);
+          setNotFound(true);
+        }
       })
       .finally(() => {
         if (!cancelled) setLoading(false);
