@@ -22,7 +22,7 @@ export type QualificationQuestion = {
   order: number;
 };
 
-export type BydHeroMediaType = "image" | "video";
+export type HeroMediaType = "image" | "video";
 
 export type DealershipSettings = {
   dealershipName: string;
@@ -35,12 +35,21 @@ export type DealershipSettings = {
   qualificationQuestions: QualificationQuestion[];
   agenteGreeting: string;
   brandTheme: BrandTheme;
-  // BYD theme only — its home hero is a full-bleed background. The admin
-  // picks image or video and supplies the URL in Configuración; every
-  // other theme ignores these fields.
-  bydHeroMediaType: BydHeroMediaType;
+  // Per-theme full-bleed hero backgrounds. The admin picks image or video
+  // and supplies the URL (or uploads a file) in Configuración; a theme
+  // ignores the fields that aren't its own.
+  bydHeroMediaType: HeroMediaType;
   bydHeroImageUrl: string;
   bydHeroVideoUrl: string;
+  gvHeroMediaType: HeroMediaType;
+  gvHeroImageUrl: string;
+  gvHeroVideoUrl: string;
+  // gustavo-villasuso hero video playback controls (seconds). end = 0
+  // means "play to the natural end". When loop is on the clip restarts
+  // from start (respecting the trim); when off it holds on the last frame.
+  gvHeroVideoStart: number;
+  gvHeroVideoEnd: number;
+  gvHeroVideoLoop: boolean;
 };
 
 // The default qualification flow the Agente concierge widget walks a
@@ -76,4 +85,10 @@ export const DEFAULT_SETTINGS: DealershipSettings = {
   bydHeroMediaType: "image",
   bydHeroImageUrl: "https://images.unsplash.com/photo-1493238792000-8113da705763",
   bydHeroVideoUrl: "",
+  gvHeroMediaType: "image",
+  gvHeroImageUrl: "https://images.unsplash.com/photo-1493238792000-8113da705763",
+  gvHeroVideoUrl: "",
+  gvHeroVideoStart: 0,
+  gvHeroVideoEnd: 0,
+  gvHeroVideoLoop: true,
 };

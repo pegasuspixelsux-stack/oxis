@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, type FormEvent } from "react";
+import { useEffect, useRef, useState, type FormEvent } from "react";
 import Image from "next/image";
 import { useSettings } from "@/components/settings-provider";
 import { useLeadForm } from "@/lib/hooks/use-lead-form";
@@ -55,9 +55,20 @@ export default function HomeHero({ loading, filterCars }: HomeProps) {
   const { settings } = useSettings();
   const collection = filterCars({}).slice(0, 6);
 
+  const videoUrl = settings.gvHeroVideoUrl?.trim();
+  const useVideo = settings.gvHeroMediaType === "video" && Boolean(videoUrl);
+
   return (
     <GvShell>
-      <Hero heroImage={settings.heroBannerImageUrl} dealershipName={settings.dealershipName} />
+      <Hero
+        useVideo={useVideo}
+        videoUrl={videoUrl ?? ""}
+        videoStart={Number(settings.gvHeroVideoStart) || 0}
+        videoEnd={Number(settings.gvHeroVideoEnd) || 0}
+        videoLoop={settings.gvHeroVideoLoop !== false}
+        imageUrl={settings.gvHeroImageUrl || settings.heroBannerImageUrl}
+        dealershipName={settings.dealershipName}
+      />
       <GuaranteeStrip />
       <CollectionGrid cars={collection} loading={loading} />
       <FinanceBlock />
@@ -66,19 +77,135 @@ export default function HomeHero({ loading, filterCars }: HomeProps) {
   );
 }
 
-function Hero({ heroImage, dealershipName }: { heroImage: string; dealershipName: string }) {
+// Trimmed autoplay loop: seeks to `start` on load and, once `end` is
+// reached (end === 0 means the natural end), either restarts from `start`
+// (loop) or holds on the last frame.
+function GvHeroVideo({
+  src,
+  start,
+  end,
+  loop,
+  poster,
+}: {
+  src: string;
+  start: number;
+  end: number;
+  loop: boolean;
+  poster?: string;
+}) {
+  const ref = useRef<HTMLVideoElement>(null);
+
+  useEffect(() => {
+    const video = ref.current;
+    if (!video) return;
+
+    const seekToStart = () => {
+      try {
+        video.currentTime = start;
+      } catch {
+        /* seeking before metadata — retry on loadedmetadata */
+      }
+    };
+    const onTimeUpdate = () => {
+      if (end > 0 && video.currentTime >= end) {
+        if (loop) {
+          video.currentTime = start;
+        } else {
+          video.pause();
+        }
+      }
+    };
+    const onEnded = () => {
+      if (loop) {
+        video.currentTime = start;
+        void video.play();
+      }
+    };
+
+    video.addEventListener("loadedmetadata", seekToStart);
+    video.addEventListener("timeupdate", onTimeUpdate);
+    video.addEventListener("ended", onEnded);
+    if (video.readyState >= 1) seekToStart();
+
+    return () => {
+      video.removeEventListener("loadedmetadata", seekToStart);
+      video.removeEventListener("timeupdate", onTimeUpdate);
+      video.removeEventListener("ended", onEnded);
+    };
+  }, [src, start, end, loop]);
+
   return (
-    <section className="border-b border-white/15 bg-black">
-      <div className="mx-auto grid max-w-7xl grid-cols-1 gap-12 px-4 py-20 sm:px-6 sm:py-24 lg:grid-cols-[1.05fr_1fr] lg:items-center lg:px-8">
-        <div>
+    <video
+      ref={ref}
+      key={src}
+      className="h-full w-full object-cover"
+      src={src}
+      poster={poster || undefined}
+      autoPlay
+      muted
+      playsInline
+      // native loop only when there is no trimmed end — otherwise the
+      // timeupdate handler owns the loop
+      loop={loop && end <= 0}
+    />
+  );
+}
+
+function Hero({
+  useVideo,
+  videoUrl,
+  videoStart,
+  videoEnd,
+  videoLoop,
+  imageUrl,
+  dealershipName,
+}: {
+  useVideo: boolean;
+  videoUrl: string;
+  videoStart: number;
+  videoEnd: number;
+  videoLoop: boolean;
+  imageUrl: string;
+  dealershipName: string;
+}) {
+  return (
+    <section className="relative isolate flex min-h-[88vh] items-center overflow-hidden border-b border-white/15 bg-black">
+      <div className="absolute inset-0 -z-10">
+        {useVideo ? (
+          <GvHeroVideo
+            src={videoUrl}
+            start={videoStart}
+            end={videoEnd}
+            loop={videoLoop}
+            poster={imageUrl}
+          />
+        ) : (
+          <Image
+            src={imageUrl}
+            alt={`Showroom de ${dealershipName}`}
+            fill
+            priority
+            sizes="100vw"
+            className="object-cover"
+          />
+        )}
+        {/* engineered scrim — heavier left where the copy sits */}
+        <div className="absolute inset-0 bg-gradient-to-r from-black/85 via-black/55 to-black/20" />
+        <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-transparent to-transparent" />
+      </div>
+
+      <span className="absolute inset-x-0 top-0 h-[3px] bg-[var(--gv-accent)]" />
+
+      <div className="mx-auto w-full max-w-7xl px-4 py-24 sm:px-6 lg:px-8">
+        <div className="max-w-2xl">
           <p className="flex items-center gap-3 font-[family-name:var(--font-gv-display)] text-[11px] font-semibold uppercase tracking-[0.28em] text-[#C8CBD0]">
             <span className="inline-block h-4 w-[3px] bg-[var(--gv-accent)]" />
             Colección Villasuso
           </p>
-          <h1 className="mt-6 font-[family-name:var(--font-gv-display)] text-4xl font-extrabold uppercase leading-[1.05] tracking-tight text-white sm:text-6xl">
+          <h1 className="mt-6 font-[family-name:var(--font-gv-display)] text-4xl font-extrabold uppercase leading-[1.05] tracking-tight text-white sm:text-6xl lg:text-7xl">
             Selección alemana y japonesa
           </h1>
-          <p className="mt-6 max-w-md text-base leading-relaxed text-white/60">
+          <p className="mt-6 max-w-md text-base leading-relaxed text-white/70">
             Rendimiento con procedencia. Una curaduría de BMW, MINI y Mazda, cada unidad
             verificada y presentada como una ficha de ingeniería.
           </p>
@@ -88,7 +215,7 @@ function Hero({ heroImage, dealershipName }: { heroImage: string; dealershipName
               <ArrowRightIcon className="h-4 w-4" />
             </GvButton>
           </div>
-          <dl className="mt-10 grid grid-cols-3 gap-px border border-white/15 bg-white/15 font-[family-name:var(--font-gv-display)]">
+          <dl className="mt-10 grid max-w-xl grid-cols-3 gap-px border border-white/15 bg-white/15 font-[family-name:var(--font-gv-display)]">
             {[
               { k: "Marcas", v: "BMW · MINI · Mazda" },
               { k: "Verificación", v: "150 puntos" },
@@ -105,21 +232,11 @@ function Hero({ heroImage, dealershipName }: { heroImage: string; dealershipName
             ))}
           </dl>
         </div>
-
-        <div className="relative aspect-[4/3] w-full overflow-hidden border border-white/20 bg-[#0B0B0C]">
-          <Image
-            src={heroImage}
-            alt={`Showroom de ${dealershipName}`}
-            fill
-            priority
-            sizes="(min-width: 1024px) 45vw, 100vw"
-            className="object-cover"
-          />
-          <span className="absolute bottom-0 left-0 bg-[var(--gv-accent)] px-3 py-1.5 font-[family-name:var(--font-gv-display)] text-[10px] font-semibold uppercase tracking-[0.2em] text-white">
-            Cada unidad, verificada
-          </span>
-        </div>
       </div>
+
+      <span className="absolute bottom-0 left-0 bg-[var(--gv-accent)] px-3 py-1.5 font-[family-name:var(--font-gv-display)] text-[10px] font-semibold uppercase tracking-[0.2em] text-white">
+        Cada unidad, verificada
+      </span>
     </section>
   );
 }

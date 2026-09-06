@@ -12,6 +12,7 @@ import {
   type QualificationQuestion,
 } from "@/lib/db/settings";
 import { PlusIcon, TrashIcon, ArrowUpIcon, ArrowDownIcon } from "@/components/icons";
+import { MediaUploader } from "@/components/media-uploader";
 import { BRAND_THEMES } from "@/lib/themes";
 
 const inputClasses =
@@ -322,6 +323,122 @@ export default function DashboardSettingsPage() {
                   Se reproduce en silencio y en bucle. Usá un MP4 optimizado (H.264, ~1080p).
                 </p>
               </div>
+            )}
+          </div>
+        </div>
+
+        <div className="rounded-2xl border border-black/[0.06] bg-white p-6 shadow-[0_1px_2px_rgba(0,0,0,0.04)]">
+          <div>
+            <h2 className="text-sm font-semibold text-[#1D1D1F]">Hero — tema Gustavo Villasuso</h2>
+            <p className="mt-0.5 text-xs text-[#6E6E73]">
+              Fondo a pantalla completa del hero. Solo aplica cuando el tema de marca activo
+              es Gustavo Villasuso. Pegá una URL o subí el archivo.
+            </p>
+          </div>
+
+          <div className="mt-4 grid grid-cols-1 gap-4 sm:grid-cols-2">
+            <div>
+              <label className={labelClasses}>Tipo de fondo</label>
+              <select
+                value={form.gvHeroMediaType}
+                onChange={(e) =>
+                  update("gvHeroMediaType", e.target.value as typeof form.gvHeroMediaType)
+                }
+                className={inputClasses}
+              >
+                <option value="image">Imagen</option>
+                <option value="video">Video</option>
+              </select>
+            </div>
+
+            {form.gvHeroMediaType === "image" ? (
+              <div className="sm:col-span-2">
+                <label className={labelClasses}>Imagen de fondo</label>
+                {form.gvHeroImageUrl && (
+                  // eslint-disable-next-line @next/next/no-img-element -- preview of an arbitrary URL
+                  <img
+                    src={form.gvHeroImageUrl}
+                    alt="Vista previa del fondo Gustavo Villasuso"
+                    className="mb-2 h-32 w-full rounded-xl border border-black/[0.06] object-cover"
+                  />
+                )}
+                <input
+                  type="text"
+                  placeholder="https://images.unsplash.com/…"
+                  value={form.gvHeroImageUrl}
+                  onChange={(e) => update("gvHeroImageUrl", e.target.value)}
+                  className={`${inputClasses} mb-2`}
+                />
+                <MediaUploader
+                  kind="image"
+                  onUploaded={(url) => update("gvHeroImageUrl", url)}
+                  label="Subir imagen"
+                />
+              </div>
+            ) : (
+              <>
+                <div className="sm:col-span-2">
+                  <label className={labelClasses}>Video de fondo (MP4 / WebM)</label>
+                  {form.gvHeroVideoUrl && (
+                    <video
+                      key={form.gvHeroVideoUrl}
+                      src={form.gvHeroVideoUrl}
+                      muted
+                      loop
+                      playsInline
+                      autoPlay
+                      className="mb-2 h-32 w-full rounded-xl border border-black/[0.06] object-cover"
+                    />
+                  )}
+                  <input
+                    type="text"
+                    placeholder="https://… .mp4  o  /uploads/…"
+                    value={form.gvHeroVideoUrl}
+                    onChange={(e) => update("gvHeroVideoUrl", e.target.value)}
+                    className={`${inputClasses} mb-2`}
+                  />
+                  <MediaUploader
+                    kind="video"
+                    onUploaded={(url) => update("gvHeroVideoUrl", url)}
+                    label="Subir video"
+                  />
+                  <p className="mt-1 text-[11px] text-[#8E8E93]">
+                    Reproducción muteada. Subida hasta 64 MB — usá un MP4 H.264 ~1080p.
+                  </p>
+                </div>
+
+                <div>
+                  <label className={labelClasses}>Inicio (seg.)</label>
+                  <input
+                    type="number"
+                    min={0}
+                    step={0.1}
+                    value={form.gvHeroVideoStart}
+                    onChange={(e) => update("gvHeroVideoStart", Number(e.target.value) || 0)}
+                    className={inputClasses}
+                  />
+                </div>
+                <div>
+                  <label className={labelClasses}>Fin (seg.) — 0 = hasta el final</label>
+                  <input
+                    type="number"
+                    min={0}
+                    step={0.1}
+                    value={form.gvHeroVideoEnd}
+                    onChange={(e) => update("gvHeroVideoEnd", Number(e.target.value) || 0)}
+                    className={inputClasses}
+                  />
+                </div>
+                <label className="flex cursor-pointer items-center gap-2 text-sm text-[#1D1D1F] sm:col-span-2">
+                  <input
+                    type="checkbox"
+                    checked={form.gvHeroVideoLoop}
+                    onChange={(e) => update("gvHeroVideoLoop", e.target.checked)}
+                    className="h-4 w-4 accent-[#0071E3]"
+                  />
+                  Repetir en bucle
+                </label>
+              </>
             )}
           </div>
         </div>
