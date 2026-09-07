@@ -3,6 +3,7 @@
 import Link from "next/link";
 import type { CSSProperties, ReactNode } from "react";
 import { useSettings } from "@/components/settings-provider";
+import { resolveThemeSettings } from "@/lib/db/settings";
 import { buildWhatsAppLink } from "@/lib/whatsapp";
 import { bydFontClass } from "../fonts";
 import { BydButton } from "./byd-button";
@@ -28,10 +29,11 @@ const FOOTER_LINKS = [
 // spec-tile highlights) can read `var(--byd-accent)`.
 export function BydShell({ children }: { children: ReactNode }) {
   const { settings } = useSettings();
+  const { logoText, address } = resolveThemeSettings(settings, "byd");
   const telHref = `tel:${settings.phoneNumber.replace(/[^0-9+]/g, "")}`;
   const whatsappHref = buildWhatsAppLink(
     settings.whatsappNumber,
-    `Hola ${settings.dealershipName}, quiero una prueba de manejo.`
+    `Hola ${logoText}, quiero una prueba de manejo.`
   );
   const hoursLines = settings.businessHours.split("\n").filter(Boolean);
 
@@ -48,7 +50,7 @@ export function BydShell({ children }: { children: ReactNode }) {
             className="flex items-center gap-2.5 font-[family-name:var(--font-byd-display)] text-lg font-bold tracking-tight text-white"
           >
             <span className="inline-block h-2.5 w-2.5 shrink-0 bg-gradient-to-br from-[var(--byd-accent)] to-[#00B4D8]" />
-            {settings.dealershipName}
+            {logoText}
           </Link>
 
           <nav className="hidden items-center gap-9 text-sm font-medium md:flex">
@@ -85,7 +87,7 @@ export function BydShell({ children }: { children: ReactNode }) {
             <div>
               <p className="flex items-center gap-2.5 font-[family-name:var(--font-byd-display)] text-lg font-bold tracking-tight">
                 <span className="inline-block h-2.5 w-2.5 shrink-0 bg-gradient-to-br from-[var(--byd-accent)] to-[#00B4D8]" />
-                {settings.dealershipName}
+                {logoText}
               </p>
               <p className="mt-4 max-w-xs text-sm leading-relaxed text-[#1E2A38]/60">
                 Movilidad eléctrica con especificaciones transparentes, tecnología a bordo y
@@ -127,7 +129,7 @@ export function BydShell({ children }: { children: ReactNode }) {
                 Dónde estamos
               </h3>
               <ul className="mt-4 flex flex-col gap-3 text-sm text-[#1E2A38]/60">
-                <li>{settings.address}</li>
+                <li>{address}</li>
                 <li>
                   <a href={telHref} className="transition-colors hover:text-[var(--byd-accent)]">
                     {settings.phoneNumber}
@@ -149,7 +151,7 @@ export function BydShell({ children }: { children: ReactNode }) {
 
           <div className="mt-12 flex flex-col gap-2 border-t border-[#0A1A2F]/10 pt-6 text-xs text-[#5A6B7D] sm:flex-row sm:items-center sm:justify-between">
             <p>
-              &copy; {new Date().getFullYear()} {settings.dealershipName}. Todos los derechos
+              &copy; {new Date().getFullYear()} {logoText}. Todos los derechos
               reservados.
             </p>
             <Link href="/login" className="transition-colors hover:text-[#0A1A2F]">

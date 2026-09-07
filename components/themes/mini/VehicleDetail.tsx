@@ -2,6 +2,7 @@
 
 import { useEffect, useState, type FormEvent } from "react";
 import { useSettings } from "@/components/settings-provider";
+import { resolveThemeSettings } from "@/lib/db/settings";
 import { buildWhatsAppLink } from "@/lib/whatsapp";
 import { estimateListingPayment } from "@/lib/finance";
 import type { VehicleDetailProps } from "@/components/themes/types";
@@ -29,6 +30,7 @@ const DEFAULT_FEATURES = [
 
 export default function VehicleDetail({ car, loading, notFound, leadForm }: VehicleDetailProps) {
   const { settings } = useSettings();
+  const { logoText } = resolveThemeSettings(settings, "mini");
 
   const [activeImage, setActiveImage] = useState(0);
   const [name, setName] = useState("");
@@ -233,7 +235,7 @@ export default function VehicleDetail({ car, loading, notFound, leadForm }: Vehi
             <div className="mt-8 border-2 border-neutral-950 bg-[var(--mini-accent)] p-8 text-white">
               <h3 className="text-lg font-extrabold uppercase tracking-wide">Consulta enviada</h3>
               <p className="mt-2 text-sm">
-                Un asesor de {settings.dealershipName} se comunica a la brevedad.
+                Un asesor de {logoText} se comunica a la brevedad.
               </p>
               <button
                 type="button"

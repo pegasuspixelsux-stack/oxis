@@ -24,6 +24,26 @@ export type QualificationQuestion = {
 
 export type HeroMediaType = "image" | "video";
 
+// Per-brand-theme overrides. Every field is optional and falls back to
+// the global value (see resolveThemeSettings). Stored as a map keyed by
+// the brand key so switching themes in the dashboard shows that theme's
+// own values.
+export type ThemeOverride = {
+  // Logo / wordmark text in the theme header (falls back to dealershipName).
+  logoText?: string;
+  // Address shown in the theme footer (falls back to `address`).
+  address?: string;
+  // Full-bleed hero background, read only by themes that render one.
+  heroMediaType?: HeroMediaType;
+  heroImageUrl?: string;
+  // Direct MP4/WebM URL, an /uploads/… path, or a YouTube link.
+  heroVideoUrl?: string;
+  // Video playback trim (seconds). end = 0 => play to the natural end.
+  heroVideoStart?: number;
+  heroVideoEnd?: number;
+  heroVideoLoop?: boolean;
+};
+
 export type DealershipSettings = {
   dealershipName: string;
   address: string;
@@ -35,22 +55,43 @@ export type DealershipSettings = {
   qualificationQuestions: QualificationQuestion[];
   agenteGreeting: string;
   brandTheme: BrandTheme;
-  // Per-theme full-bleed hero backgrounds. The admin picks image or video
-  // and supplies the URL (or uploads a file) in Configuración; a theme
-  // ignores the fields that aren't its own.
-  bydHeroMediaType: HeroMediaType;
-  bydHeroImageUrl: string;
-  bydHeroVideoUrl: string;
-  gvHeroMediaType: HeroMediaType;
-  gvHeroImageUrl: string;
-  gvHeroVideoUrl: string;
-  // gustavo-villasuso hero video playback controls (seconds). end = 0
-  // means "play to the natural end". When loop is on the clip restarts
-  // from start (respecting the trim); when off it holds on the last frame.
-  gvHeroVideoStart: number;
-  gvHeroVideoEnd: number;
-  gvHeroVideoLoop: boolean;
+  themeOverrides: Partial<Record<string, ThemeOverride>>;
 };
+
+export type ResolvedThemeSettings = {
+  logoText: string;
+  address: string;
+  hero: {
+    mediaType: HeroMediaType;
+    imageUrl: string;
+    videoUrl: string;
+    videoStart: number;
+    videoEnd: number;
+    videoLoop: boolean;
+  };
+};
+
+// Merge a brand theme's overrides onto the global settings. Themes call
+// this instead of reading settings.dealershipName / settings.address
+// directly, so each theme can carry its own wordmark, address and hero.
+export function resolveThemeSettings(
+  settings: DealershipSettings,
+  brand: BrandTheme
+): ResolvedThemeSettings {
+  const o = settings.themeOverrides?.[brand] ?? {};
+  return {
+    logoText: o.logoText?.trim() || settings.dealershipName,
+    address: o.address?.trim() || settings.address,
+    hero: {
+      mediaType: o.heroMediaType === "video" ? "video" : "image",
+      imageUrl: o.heroImageUrl?.trim() || settings.heroBannerImageUrl,
+      videoUrl: o.heroVideoUrl?.trim() || "",
+      videoStart: Number(o.heroVideoStart) || 0,
+      videoEnd: Number(o.heroVideoEnd) || 0,
+      videoLoop: o.heroVideoLoop !== false,
+    },
+  };
+}
 
 // The default qualification flow the Agente concierge widget walks a
 // visitor through. Lives here (not in the widget) so both the widget and
@@ -82,13 +123,5 @@ export const DEFAULT_SETTINGS: DealershipSettings = {
   agenteGreeting:
     "¡Hola! 👋 Soy tu asesor comercial virtual. Estoy para ayudarte a encontrar el auto ideal — empecemos.",
   brandTheme: "bmw",
-  bydHeroMediaType: "image",
-  bydHeroImageUrl: "https://images.unsplash.com/photo-1493238792000-8113da705763",
-  bydHeroVideoUrl: "",
-  gvHeroMediaType: "image",
-  gvHeroImageUrl: "https://images.unsplash.com/photo-1493238792000-8113da705763",
-  gvHeroVideoUrl: "",
-  gvHeroVideoStart: 0,
-  gvHeroVideoEnd: 0,
-  gvHeroVideoLoop: true,
+  themeOverrides: {},
 };

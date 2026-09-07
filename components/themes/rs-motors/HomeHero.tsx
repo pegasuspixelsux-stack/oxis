@@ -3,6 +3,7 @@
 import { useState, type FormEvent } from "react";
 import Image from "next/image";
 import { useSettings } from "@/components/settings-provider";
+import { resolveThemeSettings } from "@/lib/db/settings";
 import { useLeadForm } from "@/lib/hooks/use-lead-form";
 import { monthlyPayment, estimateListingPayment } from "@/lib/finance";
 import { ArrowRightIcon } from "@/components/icons";
@@ -51,11 +52,12 @@ function listingMonthly(price: string): number | null {
 
 export default function HomeHero({ loading, filterCars }: HomeProps) {
   const { settings } = useSettings();
+  const { logoText } = resolveThemeSettings(settings, "rs-motors");
   const featured = filterCars({}).slice(0, 6);
 
   return (
     <RsShell>
-      <Hero heroImage={settings.heroBannerImageUrl} dealershipName={settings.dealershipName} />
+      <Hero heroImage={settings.heroBannerImageUrl} dealershipName={logoText} />
       <GuaranteeStrip />
       <FeaturedGrid cars={featured} loading={loading} />
       <FinanceCalculator />
@@ -344,6 +346,7 @@ function RangeRow({
 
 function ContactBlock() {
   const { settings } = useSettings();
+  const { logoText } = resolveThemeSettings(settings, "rs-motors");
   const leadForm = useLeadForm();
 
   const [name, setName] = useState("");
@@ -368,7 +371,7 @@ function ContactBlock() {
         Contacto de boxes
       </h2>
       <p className="mt-3 text-sm leading-relaxed text-white/50">
-        Dejanos tus datos y un asesor de {settings.dealershipName} te contacta dentro de un día
+        Dejanos tus datos y un asesor de {logoText} te contacta dentro de un día
         hábil.
       </p>
 

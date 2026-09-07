@@ -10,6 +10,7 @@ import {
   type DealershipSettings,
   type StaffMember,
   type QualificationQuestion,
+  type ThemeOverride,
 } from "@/lib/db/settings";
 import { PlusIcon, TrashIcon, ArrowUpIcon, ArrowDownIcon } from "@/components/icons";
 import { MediaUploader } from "@/components/media-uploader";
@@ -18,6 +19,19 @@ import { BRAND_THEMES } from "@/lib/themes";
 const inputClasses =
   "w-full rounded-xl border border-black/10 bg-[#F5F5F7] px-3.5 py-2.5 text-sm text-[#1D1D1F] outline-none transition-colors focus:border-[#0071E3] focus:bg-white";
 const labelClasses = "mb-1.5 block text-xs font-medium text-[#6E6E73]";
+
+const YT_RE =
+  /(?:youtube\.com\/(?:watch\?(?:.*&)?v=|embed\/|shorts\/|live\/)|youtu\.be\/)([A-Za-z0-9_-]{11})/;
+function youTubeId(url: string): string {
+  return url.match(YT_RE)?.[1] ?? "";
+}
+function isYouTubeUrl(url: string): boolean {
+  return YT_RE.test(url);
+}
+
+// Themes whose home surface renders a configurable full-bleed hero
+// background. Other themes only expose the logo text + address overrides.
+const HERO_THEMES = new Set(["byd", "gustavo-villasuso"]);
 
 const BRAND_THEME_LABELS: Record<(typeof BRAND_THEMES)[number], string> = {
   bmw: "BMW",
@@ -28,7 +42,7 @@ const BRAND_THEME_LABELS: Record<(typeof BRAND_THEMES)[number], string> = {
   voituret: "Voituret",
   carmax: "CarMax",
   "renato-conti": "Renato Conti Black Edition",
-  "gustavo-villasuso": "Gustavo Villasuso",
+  "gustavo-villasuso": "Gonzalo Vilasuso",
   byd: "BYD",
 };
 
@@ -59,6 +73,23 @@ export default function DashboardSettingsPage() {
 
   function update<K extends keyof DealershipSettings>(key: K, value: DealershipSettings[K]) {
     setForm((prev) => ({ ...prev, [key]: value }));
+    setSaved(false);
+  }
+
+  // Overrides for the theme currently selected in `brandTheme`. Each theme
+  // keeps its own logo text, address and hero — switching the selector
+  // above swaps which slice of `themeOverrides` this card edits.
+  const activeTheme = form.brandTheme;
+  const activeOverride: ThemeOverride = form.themeOverrides?.[activeTheme] ?? {};
+
+  function updateOverride<K extends keyof ThemeOverride>(key: K, value: ThemeOverride[K]) {
+    setForm((prev) => ({
+      ...prev,
+      themeOverrides: {
+        ...prev.themeOverrides,
+        [activeTheme]: { ...(prev.themeOverrides?.[activeTheme] ?? {}), [key]: value },
+      },
+    }));
     setSaved(false);
   }
 
@@ -258,189 +289,164 @@ export default function DashboardSettingsPage() {
 
         <div className="rounded-2xl border border-black/[0.06] bg-white p-6 shadow-[0_1px_2px_rgba(0,0,0,0.04)]">
           <div>
-            <h2 className="text-sm font-semibold text-[#1D1D1F]">Hero — tema BYD</h2>
+            <h2 className="text-sm font-semibold text-[#1D1D1F]">
+              Personalización del tema — {BRAND_THEME_LABELS[activeTheme]}
+            </h2>
             <p className="mt-0.5 text-xs text-[#6E6E73]">
-              Fondo a pantalla completa del hero en la página de inicio. Solo aplica cuando el
-              tema de marca activo es BYD.
+              Estos valores aplican solo al tema seleccionado arriba. Cada tema guarda su
+              propio nombre, dirección{HERO_THEMES.has(activeTheme) ? " y hero" : ""}. Si dejás
+              un campo vacío se usa el valor general.
             </p>
           </div>
 
           <div className="mt-4 grid grid-cols-1 gap-4 sm:grid-cols-2">
             <div>
-              <label className={labelClasses}>Tipo de fondo</label>
-              <select
-                value={form.bydHeroMediaType}
-                onChange={(e) =>
-                  update("bydHeroMediaType", e.target.value as typeof form.bydHeroMediaType)
-                }
+              <label className={labelClasses}>Nombre / logo del tema</label>
+              <input
+                type="text"
+                placeholder={form.dealershipName}
+                value={activeOverride.logoText ?? ""}
+                onChange={(e) => updateOverride("logoText", e.target.value)}
                 className={inputClasses}
-              >
-                <option value="image">Imagen</option>
-                <option value="video">Video</option>
-              </select>
+              />
             </div>
-
-            {form.bydHeroMediaType === "image" ? (
-              <div className="sm:col-span-2">
-                <label className={labelClasses}>URL de la imagen de fondo</label>
-                {form.bydHeroImageUrl && (
-                  // eslint-disable-next-line @next/next/no-img-element -- preview of an arbitrary URL
-                  <img
-                    src={form.bydHeroImageUrl}
-                    alt="Vista previa del fondo BYD"
-                    className="mb-2 h-32 w-full rounded-xl border border-black/[0.06] object-cover"
-                  />
-                )}
-                <input
-                  type="text"
-                  placeholder="https://images.unsplash.com/…"
-                  value={form.bydHeroImageUrl}
-                  onChange={(e) => update("bydHeroImageUrl", e.target.value)}
-                  className={inputClasses}
-                />
-              </div>
-            ) : (
-              <div className="sm:col-span-2">
-                <label className={labelClasses}>URL del video de fondo (MP4)</label>
-                {form.bydHeroVideoUrl && (
-                  <video
-                    src={form.bydHeroVideoUrl}
-                    muted
-                    loop
-                    playsInline
-                    autoPlay
-                    className="mb-2 h-32 w-full rounded-xl border border-black/[0.06] object-cover"
-                  />
-                )}
-                <input
-                  type="text"
-                  placeholder="https://… .mp4  o  /hero-images/mi-video.mp4"
-                  value={form.bydHeroVideoUrl}
-                  onChange={(e) => update("bydHeroVideoUrl", e.target.value)}
-                  className={inputClasses}
-                />
-                <p className="mt-1 text-[11px] text-[#8E8E93]">
-                  Se reproduce en silencio y en bucle. Usá un MP4 optimizado (H.264, ~1080p).
-                </p>
-              </div>
-            )}
-          </div>
-        </div>
-
-        <div className="rounded-2xl border border-black/[0.06] bg-white p-6 shadow-[0_1px_2px_rgba(0,0,0,0.04)]">
-          <div>
-            <h2 className="text-sm font-semibold text-[#1D1D1F]">Hero — tema Gustavo Villasuso</h2>
-            <p className="mt-0.5 text-xs text-[#6E6E73]">
-              Fondo a pantalla completa del hero. Solo aplica cuando el tema de marca activo
-              es Gustavo Villasuso. Pegá una URL o subí el archivo.
-            </p>
-          </div>
-
-          <div className="mt-4 grid grid-cols-1 gap-4 sm:grid-cols-2">
             <div>
-              <label className={labelClasses}>Tipo de fondo</label>
-              <select
-                value={form.gvHeroMediaType}
-                onChange={(e) =>
-                  update("gvHeroMediaType", e.target.value as typeof form.gvHeroMediaType)
-                }
+              <label className={labelClasses}>Dirección del tema</label>
+              <input
+                type="text"
+                placeholder={form.address}
+                value={activeOverride.address ?? ""}
+                onChange={(e) => updateOverride("address", e.target.value)}
                 className={inputClasses}
-              >
-                <option value="image">Imagen</option>
-                <option value="video">Video</option>
-              </select>
+              />
             </div>
+          </div>
 
-            {form.gvHeroMediaType === "image" ? (
-              <div className="sm:col-span-2">
-                <label className={labelClasses}>Imagen de fondo</label>
-                {form.gvHeroImageUrl && (
-                  // eslint-disable-next-line @next/next/no-img-element -- preview of an arbitrary URL
-                  <img
-                    src={form.gvHeroImageUrl}
-                    alt="Vista previa del fondo Gustavo Villasuso"
-                    className="mb-2 h-32 w-full rounded-xl border border-black/[0.06] object-cover"
-                  />
-                )}
-                <input
-                  type="text"
-                  placeholder="https://images.unsplash.com/…"
-                  value={form.gvHeroImageUrl}
-                  onChange={(e) => update("gvHeroImageUrl", e.target.value)}
-                  className={`${inputClasses} mb-2`}
-                />
-                <MediaUploader
-                  kind="image"
-                  onUploaded={(url) => update("gvHeroImageUrl", url)}
-                  label="Subir imagen"
-                />
-              </div>
-            ) : (
-              <>
-                <div className="sm:col-span-2">
-                  <label className={labelClasses}>Video de fondo (MP4 / WebM)</label>
-                  {form.gvHeroVideoUrl && (
-                    <video
-                      key={form.gvHeroVideoUrl}
-                      src={form.gvHeroVideoUrl}
-                      muted
-                      loop
-                      playsInline
-                      autoPlay
-                      className="mb-2 h-32 w-full rounded-xl border border-black/[0.06] object-cover"
+          {HERO_THEMES.has(activeTheme) && (
+            <div className="mt-6 border-t border-black/[0.06] pt-5">
+              <h3 className="text-xs font-bold uppercase tracking-wider text-[#8E8E93]">
+                Fondo del hero (página de inicio)
+              </h3>
+              <div className="mt-3 grid grid-cols-1 gap-4 sm:grid-cols-2">
+                <div>
+                  <label className={labelClasses}>Tipo de fondo</label>
+                  <select
+                    value={activeOverride.heroMediaType ?? "image"}
+                    onChange={(e) =>
+                      updateOverride("heroMediaType", e.target.value as "image" | "video")
+                    }
+                    className={inputClasses}
+                  >
+                    <option value="image">Imagen</option>
+                    <option value="video">Video</option>
+                  </select>
+                </div>
+
+                {(activeOverride.heroMediaType ?? "image") === "image" ? (
+                  <div className="sm:col-span-2">
+                    <label className={labelClasses}>Imagen de fondo</label>
+                    {activeOverride.heroImageUrl && (
+                      // eslint-disable-next-line @next/next/no-img-element -- preview of an arbitrary URL
+                      <img
+                        src={activeOverride.heroImageUrl}
+                        alt="Vista previa del fondo del hero"
+                        className="mb-2 h-32 w-full rounded-xl border border-black/[0.06] object-cover"
+                      />
+                    )}
+                    <input
+                      type="text"
+                      placeholder="https://images.unsplash.com/…"
+                      value={activeOverride.heroImageUrl ?? ""}
+                      onChange={(e) => updateOverride("heroImageUrl", e.target.value)}
+                      className={`${inputClasses} mb-2`}
                     />
-                  )}
-                  <input
-                    type="text"
-                    placeholder="https://… .mp4  o  /uploads/…"
-                    value={form.gvHeroVideoUrl}
-                    onChange={(e) => update("gvHeroVideoUrl", e.target.value)}
-                    className={`${inputClasses} mb-2`}
-                  />
-                  <MediaUploader
-                    kind="video"
-                    onUploaded={(url) => update("gvHeroVideoUrl", url)}
-                    label="Subir video"
-                  />
-                  <p className="mt-1 text-[11px] text-[#8E8E93]">
-                    Reproducción muteada. Subida hasta 64 MB — usá un MP4 H.264 ~1080p.
-                  </p>
-                </div>
+                    <MediaUploader
+                      kind="image"
+                      onUploaded={(url) => updateOverride("heroImageUrl", url)}
+                      label="Subir imagen"
+                    />
+                  </div>
+                ) : (
+                  <>
+                    <div className="sm:col-span-2">
+                      <label className={labelClasses}>Video de fondo</label>
+                      {activeOverride.heroVideoUrl &&
+                        (isYouTubeUrl(activeOverride.heroVideoUrl) ? (
+                          // eslint-disable-next-line @next/next/no-img-element -- YouTube thumbnail
+                          <img
+                            src={`https://img.youtube.com/vi/${youTubeId(activeOverride.heroVideoUrl)}/hqdefault.jpg`}
+                            alt="Vista previa de YouTube"
+                            className="mb-2 h-32 w-full rounded-xl border border-black/[0.06] object-cover"
+                          />
+                        ) : (
+                          <video
+                            key={activeOverride.heroVideoUrl}
+                            src={activeOverride.heroVideoUrl}
+                            muted
+                            loop
+                            playsInline
+                            autoPlay
+                            className="mb-2 h-32 w-full rounded-xl border border-black/[0.06] object-cover"
+                          />
+                        ))}
+                      <input
+                        type="text"
+                        placeholder="Link de YouTube, un .mp4/.webm directo, o /uploads/…"
+                        value={activeOverride.heroVideoUrl ?? ""}
+                        onChange={(e) => updateOverride("heroVideoUrl", e.target.value)}
+                        className={`${inputClasses} mb-2`}
+                      />
+                      <MediaUploader
+                        kind="video"
+                        onUploaded={(url) => updateOverride("heroVideoUrl", url)}
+                        label="Subir video"
+                      />
+                      <p className="mt-1 text-[11px] text-[#8E8E93]">
+                        Reproducción muteada, sin controles. Aceptá un link de YouTube, un
+                        MP4/WebM directo, o subí un archivo (hasta 64 MB).
+                      </p>
+                    </div>
 
-                <div>
-                  <label className={labelClasses}>Inicio (seg.)</label>
-                  <input
-                    type="number"
-                    min={0}
-                    step={0.1}
-                    value={form.gvHeroVideoStart}
-                    onChange={(e) => update("gvHeroVideoStart", Number(e.target.value) || 0)}
-                    className={inputClasses}
-                  />
-                </div>
-                <div>
-                  <label className={labelClasses}>Fin (seg.) — 0 = hasta el final</label>
-                  <input
-                    type="number"
-                    min={0}
-                    step={0.1}
-                    value={form.gvHeroVideoEnd}
-                    onChange={(e) => update("gvHeroVideoEnd", Number(e.target.value) || 0)}
-                    className={inputClasses}
-                  />
-                </div>
-                <label className="flex cursor-pointer items-center gap-2 text-sm text-[#1D1D1F] sm:col-span-2">
-                  <input
-                    type="checkbox"
-                    checked={form.gvHeroVideoLoop}
-                    onChange={(e) => update("gvHeroVideoLoop", e.target.checked)}
-                    className="h-4 w-4 accent-[#0071E3]"
-                  />
-                  Repetir en bucle
-                </label>
-              </>
-            )}
-          </div>
+                    <div>
+                      <label className={labelClasses}>Inicio (seg.)</label>
+                      <input
+                        type="number"
+                        min={0}
+                        step={0.1}
+                        value={activeOverride.heroVideoStart ?? 0}
+                        onChange={(e) =>
+                          updateOverride("heroVideoStart", Number(e.target.value) || 0)
+                        }
+                        className={inputClasses}
+                      />
+                    </div>
+                    <div>
+                      <label className={labelClasses}>Fin (seg.) — 0 = hasta el final</label>
+                      <input
+                        type="number"
+                        min={0}
+                        step={0.1}
+                        value={activeOverride.heroVideoEnd ?? 0}
+                        onChange={(e) =>
+                          updateOverride("heroVideoEnd", Number(e.target.value) || 0)
+                        }
+                        className={inputClasses}
+                      />
+                    </div>
+                    <label className="flex cursor-pointer items-center gap-2 text-sm text-[#1D1D1F] sm:col-span-2">
+                      <input
+                        type="checkbox"
+                        checked={activeOverride.heroVideoLoop !== false}
+                        onChange={(e) => updateOverride("heroVideoLoop", e.target.checked)}
+                        className="h-4 w-4 accent-[#0071E3]"
+                      />
+                      Repetir en bucle
+                    </label>
+                  </>
+                )}
+              </div>
+            </div>
+          )}
         </div>
 
         <div className="rounded-2xl border border-black/[0.06] bg-white p-6 shadow-[0_1px_2px_rgba(0,0,0,0.04)]">

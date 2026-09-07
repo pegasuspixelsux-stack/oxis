@@ -3,6 +3,7 @@
 import { useEffect, useState, type FormEvent } from "react";
 import Link from "next/link";
 import { useSettings } from "@/components/settings-provider";
+import { resolveThemeSettings } from "@/lib/db/settings";
 import { buildWhatsAppLink } from "@/lib/whatsapp";
 import type { InventoryListProps } from "@/components/themes/types";
 
@@ -15,6 +16,7 @@ export default function InventoryList({
   filterCars,
 }: InventoryListProps) {
   const { settings } = useSettings();
+  const { logoText, address } = resolveThemeSettings(settings, "bmw");
 
   // Search & Filter states
   const [searchTerm, setSearchTerm] = useState("");
@@ -487,7 +489,7 @@ export default function InventoryList({
               Visitanos
             </h3>
             <ul className="mt-4 space-y-2.5 text-xs text-slate-600">
-              <li>{settings.address}</li>
+              <li>{address}</li>
               <li>
                 <a
                   href={`tel:${settings.phoneNumber.replace(/[^0-9+]/g, "")}`}
@@ -500,7 +502,7 @@ export default function InventoryList({
                 <a
                   href={buildWhatsAppLink(
                     settings.whatsappNumber,
-                    `Hola ${settings.dealershipName}, quiero hacer una consulta.`
+                    `Hola ${logoText}, quiero hacer una consulta.`
                   )}
                   target="_blank"
                   rel="noopener noreferrer"
@@ -515,7 +517,7 @@ export default function InventoryList({
 
         <div className="border-t border-[#D2D2D7]/60">
           <div className="max-w-7xl mx-auto px-6 py-5 text-[11px] text-slate-400">
-            &copy; {new Date().getFullYear()} {settings.dealershipName}. Todos los derechos
+            &copy; {new Date().getFullYear()} {logoText}. Todos los derechos
             reservados.
           </div>
         </div>

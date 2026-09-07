@@ -2,6 +2,7 @@
 
 import { useEffect, useState, type FormEvent } from "react";
 import { useSettings } from "@/components/settings-provider";
+import { resolveThemeSettings } from "@/lib/db/settings";
 import { buildWhatsAppLink } from "@/lib/whatsapp";
 import {
   estimateListingPayment,
@@ -43,6 +44,7 @@ const TECH_CALLOUTS = [
 
 export default function DetailView({ car, loading, notFound, leadForm }: VehicleDetailProps) {
   const { settings } = useSettings();
+  const { logoText } = resolveThemeSettings(settings, "byd");
 
   const [activeImage, setActiveImage] = useState(0);
   const [name, setName] = useState("");
@@ -264,14 +266,14 @@ export default function DetailView({ car, loading, notFound, leadForm }: Vehicle
             Consultá por este vehículo
           </h2>
           <p className="mt-2 text-sm text-[#1E2A38]/60">
-            Te responde un asesor de {settings.dealershipName} dentro de un día hábil.
+            Te responde un asesor de {logoText} dentro de un día hábil.
           </p>
 
           {leadForm.success ? (
             <div className="mt-6 border border-[var(--byd-accent)]/30 bg-[#F1F4F7] p-6">
               <h3 className="text-base font-semibold">Consulta enviada</h3>
               <p className="mt-2 text-sm text-[#1E2A38]/65">
-                Un asesor de {settings.dealershipName} se comunica a la brevedad.
+                Un asesor de {logoText} se comunica a la brevedad.
               </p>
               <button
                 type="button"

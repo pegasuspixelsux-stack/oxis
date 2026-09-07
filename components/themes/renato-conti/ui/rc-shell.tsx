@@ -3,6 +3,7 @@
 import Link from "next/link";
 import type { CSSProperties, ReactNode } from "react";
 import { useSettings } from "@/components/settings-provider";
+import { resolveThemeSettings } from "@/lib/db/settings";
 import { buildWhatsAppLink } from "@/lib/whatsapp";
 import { renatoContiFontClass } from "../fonts";
 
@@ -18,10 +19,11 @@ const NAV_LINKS = [
 // `var(--rc-accent)`.
 export function RcShell({ children }: { children: ReactNode }) {
   const { settings } = useSettings();
+  const { logoText, address } = resolveThemeSettings(settings, "renato-conti");
   const telHref = `tel:${settings.phoneNumber.replace(/[^0-9+]/g, "")}`;
   const whatsappHref = buildWhatsAppLink(
     settings.whatsappNumber,
-    `Hola ${settings.dealershipName}, quisiera consultar por una pieza de la curaduría.`
+    `Hola ${logoText}, quisiera consultar por una pieza de la curaduría.`
   );
   const hoursLines = settings.businessHours.split("\n").filter(Boolean);
 
@@ -37,7 +39,7 @@ export function RcShell({ children }: { children: ReactNode }) {
             href="#top"
             className="font-[family-name:var(--font-rc-display)] text-[13px] font-light uppercase tracking-[0.34em] text-[#E8E8E8]"
           >
-            {settings.dealershipName}
+            {logoText}
           </Link>
 
           <nav className="flex items-center gap-10 font-[family-name:var(--font-rc-display)] text-[10px] uppercase tracking-[0.28em] text-[#8C8C8C]">
@@ -65,14 +67,14 @@ export function RcShell({ children }: { children: ReactNode }) {
       <footer className="border-t border-[#FFFFFF14]">
         <div className="mx-auto max-w-6xl px-6 py-20 sm:px-12">
           <p className="font-[family-name:var(--font-rc-display)] text-[11px] uppercase tracking-[0.34em] text-[#E8E8E8]">
-            {settings.dealershipName} — Black Edition
+            {logoText} — Black Edition
           </p>
 
           <div className="mt-12 grid grid-cols-1 gap-10 text-[11px] uppercase tracking-[0.22em] text-[#8C8C8C] sm:grid-cols-3">
             <div>
               <p className="text-[#E8E8E8]">Dirección</p>
               <p className="mt-4 leading-relaxed normal-case tracking-normal text-[#8C8C8C]">
-                {settings.address}
+                {address}
               </p>
             </div>
 
@@ -112,7 +114,7 @@ export function RcShell({ children }: { children: ReactNode }) {
 
           <div className="mt-16 flex flex-col gap-2 border-t border-[#FFFFFF14] pt-6 text-[10px] uppercase tracking-[0.24em] text-[#5A5A5A] sm:flex-row sm:items-center sm:justify-between">
             <p>
-              &copy; {new Date().getFullYear()} {settings.dealershipName}
+              &copy; {new Date().getFullYear()} {logoText}
             </p>
             <Link href="/login" className="transition-colors hover:text-[#8C8C8C]">
               Acceso interno

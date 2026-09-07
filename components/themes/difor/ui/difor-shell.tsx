@@ -3,6 +3,7 @@
 import Link from "next/link";
 import type { CSSProperties, ReactNode } from "react";
 import { useSettings } from "@/components/settings-provider";
+import { resolveThemeSettings } from "@/lib/db/settings";
 import { buildWhatsAppLink } from "@/lib/whatsapp";
 import { diforFontClass } from "../fonts";
 
@@ -26,10 +27,11 @@ const FOOTER_LINKS = [
 // focus border, verified badges) can read `var(--difor-accent)`.
 export function DiforShell({ children }: { children: ReactNode }) {
   const { settings } = useSettings();
+  const { logoText, address } = resolveThemeSettings(settings, "difor");
   const telHref = `tel:${settings.phoneNumber.replace(/[^0-9+]/g, "")}`;
   const whatsappHref = buildWhatsAppLink(
     settings.whatsappNumber,
-    `Hola ${settings.dealershipName}, quiero hacer una consulta.`
+    `Hola ${logoText}, quiero hacer una consulta.`
   );
   const hoursLines = settings.businessHours.split("\n").filter(Boolean);
 
@@ -43,7 +45,7 @@ export function DiforShell({ children }: { children: ReactNode }) {
         <div className="mx-auto flex h-16 max-w-7xl items-center justify-between px-4 sm:px-6 lg:px-8">
           <Link href="#top" className="flex items-center gap-2.5 text-lg font-semibold tracking-tight">
             <span className="inline-block h-6 w-1.5 shrink-0 bg-[var(--difor-accent)]" />
-            {settings.dealershipName}
+            {logoText}
           </Link>
 
           <nav className="hidden items-center gap-8 text-sm font-medium md:flex">
@@ -81,7 +83,7 @@ export function DiforShell({ children }: { children: ReactNode }) {
             <div>
               <p className="flex items-center gap-2.5 text-lg font-semibold tracking-tight">
                 <span className="inline-block h-6 w-1.5 shrink-0 bg-[var(--difor-accent)]" />
-                {settings.dealershipName}
+                {logoText}
               </p>
               <p className="mt-4 max-w-xs text-sm leading-relaxed text-[#1B2733]/60">
                 Concesionaria multimarca con inspección verificada de 150 puntos, precios
@@ -126,7 +128,7 @@ export function DiforShell({ children }: { children: ReactNode }) {
                 Dónde estamos
               </h3>
               <ul className="mt-4 flex flex-col gap-3 text-sm text-[#1B2733]/60">
-                <li>{settings.address}</li>
+                <li>{address}</li>
                 <li>
                   <a href={telHref} className="transition-colors hover:text-[var(--difor-accent)]">
                     {settings.phoneNumber}
@@ -148,7 +150,7 @@ export function DiforShell({ children }: { children: ReactNode }) {
 
           <div className="mt-12 flex flex-col gap-2 border-t border-[#1B2733]/10 pt-6 text-xs text-[#1B2733]/45 sm:flex-row sm:items-center sm:justify-between">
             <p>
-              &copy; {new Date().getFullYear()} {settings.dealershipName}. Todos los derechos
+              &copy; {new Date().getFullYear()} {logoText}. Todos los derechos
               reservados.
             </p>
             <Link href="/login" className="transition-colors hover:text-[#1B2733]/70">

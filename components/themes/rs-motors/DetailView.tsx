@@ -2,6 +2,7 @@
 
 import { useEffect, useState, type FormEvent } from "react";
 import { useSettings } from "@/components/settings-provider";
+import { resolveThemeSettings } from "@/lib/db/settings";
 import { buildWhatsAppLink } from "@/lib/whatsapp";
 import { estimateListingPayment } from "@/lib/finance";
 import type { VehicleDetailProps } from "@/components/themes/types";
@@ -34,6 +35,7 @@ const TRACK_INSPECTION = "Inspección de 150 puntos ✓ — apto para pista";
 
 export default function DetailView({ car, loading, notFound, leadForm }: VehicleDetailProps) {
   const { settings } = useSettings();
+  const { logoText } = resolveThemeSettings(settings, "rs-motors");
 
   const [activeImage, setActiveImage] = useState(0);
   const [name, setName] = useState("");
@@ -235,7 +237,7 @@ export default function DetailView({ car, loading, notFound, leadForm }: Vehicle
             Consultá por esta unidad
           </h2>
           <p className="mt-2 text-sm text-white/50">
-            Te responde un asesor de {settings.dealershipName} a la brevedad.
+            Te responde un asesor de {logoText} a la brevedad.
           </p>
 
           {leadForm.success ? (
@@ -244,7 +246,7 @@ export default function DetailView({ car, loading, notFound, leadForm }: Vehicle
                 Consulta enviada
               </h3>
               <p className="mt-2 text-sm text-white/60">
-                Un asesor de {settings.dealershipName} se comunica a la brevedad.
+                Un asesor de {logoText} se comunica a la brevedad.
               </p>
               <button
                 type="button"

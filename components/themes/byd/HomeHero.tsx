@@ -3,6 +3,7 @@
 import { useState, type FormEvent } from "react";
 import Image from "next/image";
 import { useSettings } from "@/components/settings-provider";
+import { resolveThemeSettings } from "@/lib/db/settings";
 import { useLeadForm } from "@/lib/hooks/use-lead-form";
 import { monthlyPayment, estimateListingPayment } from "@/lib/finance";
 import { ArrowRightIcon } from "@/components/icons";
@@ -56,18 +57,18 @@ function listingMonthly(price: string): number | null {
 
 export default function HomeHero({ loading, filterCars }: HomeProps) {
   const { settings } = useSettings();
+  const { hero, logoText } = resolveThemeSettings(settings, "byd");
   const featured = filterCars({}).slice(0, 6);
 
-  const videoUrl = settings.bydHeroVideoUrl?.trim();
-  const useVideo = settings.bydHeroMediaType === "video" && Boolean(videoUrl);
+  const useVideo = hero.mediaType === "video" && Boolean(hero.videoUrl);
 
   return (
     <BydShell>
       <Hero
         useVideo={useVideo}
-        videoUrl={videoUrl ?? ""}
-        imageUrl={settings.bydHeroImageUrl || settings.heroBannerImageUrl}
-        dealershipName={settings.dealershipName}
+        videoUrl={hero.videoUrl}
+        imageUrl={hero.imageUrl}
+        dealershipName={logoText}
       />
       <SpecCalloutBand />
       <CollectionGrid cars={featured} loading={loading} />
@@ -407,6 +408,7 @@ function SliderRow({
 
 function ContactBlock() {
   const { settings } = useSettings();
+  const { logoText } = resolveThemeSettings(settings, "byd");
   const leadForm = useLeadForm();
 
   const [name, setName] = useState("");
@@ -431,7 +433,7 @@ function ContactBlock() {
         El futuro se prueba manejando
       </h2>
       <p className="mt-3 text-sm leading-relaxed text-[#1E2A38]/60">
-        Dejanos tus datos y un asesor de {settings.dealershipName} te contacta dentro de un día
+        Dejanos tus datos y un asesor de {logoText} te contacta dentro de un día
         hábil.
       </p>
 

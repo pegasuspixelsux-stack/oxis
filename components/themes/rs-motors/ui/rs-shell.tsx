@@ -3,6 +3,7 @@
 import Link from "next/link";
 import type { CSSProperties, ReactNode } from "react";
 import { useSettings } from "@/components/settings-provider";
+import { resolveThemeSettings } from "@/lib/db/settings";
 import { buildWhatsAppLink } from "@/lib/whatsapp";
 import { rsMotorsFontClass } from "../fonts";
 
@@ -27,10 +28,11 @@ const FOOTER_LINKS = [
 // condensed, diagonal red trim, zero corner radius.
 export function RsShell({ children }: { children: ReactNode }) {
   const { settings } = useSettings();
+  const { logoText, address } = resolveThemeSettings(settings, "rs-motors");
   const telHref = `tel:${settings.phoneNumber.replace(/[^0-9+]/g, "")}`;
   const whatsappHref = buildWhatsAppLink(
     settings.whatsappNumber,
-    `Hola ${settings.dealershipName}, quiero hacer una consulta.`
+    `Hola ${logoText}, quiero hacer una consulta.`
   );
   const hoursLines = settings.businessHours.split("\n").filter(Boolean);
 
@@ -47,7 +49,7 @@ export function RsShell({ children }: { children: ReactNode }) {
             className="flex items-center gap-3 text-lg font-bold uppercase tracking-[0.15em] text-white"
           >
             <span className="inline-block h-5 w-1.5 shrink-0 -skew-x-12 bg-[var(--rs-accent)]" />
-            {settings.dealershipName}
+            {logoText}
           </Link>
 
           <nav className="hidden items-center gap-9 text-[11px] font-bold uppercase tracking-[0.25em] md:flex">
@@ -85,7 +87,7 @@ export function RsShell({ children }: { children: ReactNode }) {
             <div>
               <p className="flex items-center gap-3 text-lg font-bold uppercase tracking-[0.15em] text-white">
                 <span className="inline-block h-5 w-1.5 shrink-0 -skew-x-12 bg-[var(--rs-accent)]" />
-                {settings.dealershipName}
+                {logoText}
               </p>
               <p className="mt-4 max-w-xs text-sm leading-relaxed text-white/50">
                 Usados de alto rendimiento con inspección de 150 puntos, precios cerrados y
@@ -127,7 +129,7 @@ export function RsShell({ children }: { children: ReactNode }) {
                 Visitanos
               </h3>
               <ul className="mt-4 flex flex-col gap-3 text-sm text-white/50">
-                <li>{settings.address}</li>
+                <li>{address}</li>
                 <li>
                   <a
                     href={telHref}
@@ -152,7 +154,7 @@ export function RsShell({ children }: { children: ReactNode }) {
 
           <div className="mt-12 flex flex-col gap-2 border-t border-white/10 pt-6 text-xs text-white/40 sm:flex-row sm:items-center sm:justify-between">
             <p>
-              &copy; {new Date().getFullYear()} {settings.dealershipName}. Todos los derechos
+              &copy; {new Date().getFullYear()} {logoText}. Todos los derechos
               reservados.
             </p>
             <Link href="/login" className="uppercase tracking-[0.25em] hover:text-white/70">

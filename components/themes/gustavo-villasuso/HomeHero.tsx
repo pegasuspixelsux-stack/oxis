@@ -3,6 +3,7 @@
 import { useEffect, useRef, useState, type FormEvent } from "react";
 import Image from "next/image";
 import { useSettings } from "@/components/settings-provider";
+import { resolveThemeSettings } from "@/lib/db/settings";
 import { useLeadForm } from "@/lib/hooks/use-lead-form";
 import { monthlyPayment, estimateListingPayment } from "@/lib/finance";
 import { ArrowRightIcon } from "@/components/icons";
@@ -10,6 +11,33 @@ import type { HomeProps } from "@/components/themes/types";
 import { GvShell } from "./ui/gv-shell";
 import { GvButton } from "./ui/gv-button";
 import { GvField, gvControlClass } from "./ui/gv-field";
+
+type YTPlayer = {
+  mute: () => void;
+  playVideo: () => void;
+  seekTo: (seconds: number, allowSeekAhead?: boolean) => void;
+  getIframe: () => HTMLIFrameElement;
+  destroy: () => void;
+};
+type YTEvent = { target: YTPlayer; data: number };
+type YTPlayerCtor = new (
+  el: HTMLElement,
+  opts: {
+    videoId: string;
+    playerVars?: Record<string, string | number>;
+    events?: {
+      onReady?: (e: YTEvent) => void;
+      onStateChange?: (e: YTEvent) => void;
+    };
+  }
+) => YTPlayer;
+
+declare global {
+  interface Window {
+    YT?: { Player: YTPlayerCtor };
+    onYouTubeIframeAPIReady?: () => void;
+  }
+}
 
 // Copied verbatim from BMW's intro-section copy (hard rule: no imports
 // across theme folders). gustavo-villasuso renders these as a precise
@@ -53,21 +81,22 @@ function listingMonthly(price: string): number | null {
 
 export default function HomeHero({ loading, filterCars }: HomeProps) {
   const { settings } = useSettings();
+  const theme = resolveThemeSettings(settings, "gustavo-villasuso");
   const collection = filterCars({}).slice(0, 6);
 
-  const videoUrl = settings.gvHeroVideoUrl?.trim();
-  const useVideo = settings.gvHeroMediaType === "video" && Boolean(videoUrl);
+  const { hero } = theme;
+  const useVideo = hero.mediaType === "video" && Boolean(hero.videoUrl);
 
   return (
     <GvShell>
       <Hero
         useVideo={useVideo}
-        videoUrl={videoUrl ?? ""}
-        videoStart={Number(settings.gvHeroVideoStart) || 0}
-        videoEnd={Number(settings.gvHeroVideoEnd) || 0}
-        videoLoop={settings.gvHeroVideoLoop !== false}
-        imageUrl={settings.gvHeroImageUrl || settings.heroBannerImageUrl}
-        dealershipName={settings.dealershipName}
+        videoUrl={hero.videoUrl}
+        videoStart={hero.videoStart}
+        videoEnd={hero.videoEnd}
+        videoLoop={hero.videoLoop}
+        imageUrl={hero.imageUrl}
+        dealershipName={theme.logoText}
       />
       <GuaranteeStrip />
       <CollectionGrid cars={collection} loading={loading} />
@@ -77,10 +106,21 @@ export default function HomeHero({ loading, filterCars }: HomeProps) {
   );
 }
 
-// Trimmed autoplay loop: seeks to `start` on load and, once `end` is
-// reached (end === 0 means the natural end), either restarts from `start`
-// (loop) or holds on the last frame.
-function GvHeroVideo({
+// Accepts a direct video file URL OR a YouTube link and returns how to
+// render it. YouTube ids come from youtu.be/ID, watch?v=ID, /embed/ID,
+// /shorts/ID.
+function parseHeroVideo(url: string): { kind: "youtube"; id: string } | { kind: "file"; url: string } {
+  const m = url.match(
+    /(?:youtube\.com\/(?:watch\?(?:.*&)?v=|embed\/|shorts\/|live\/)|youtu\.be\/)([A-Za-z0-9_-]{11})/
+  );
+  if (m) return { kind: "youtube", id: m[1] };
+  return { kind: "file", url };
+}
+
+// Direct video file: seeks to `start` on load and, once `end` is reached
+// (end === 0 means the natural end), either restarts from `start` (loop)
+// or holds on the last frame.
+function GvHeroVideoFile({
   src,
   start,
   end,
@@ -93,42 +133,54 @@ function GvHeroVideo({
   loop: boolean;
   poster?: string;
 }) {
-  const ref = useRef<HTMLVideoElement>(null);
+  const videoRef = useRef<HTMLVideoElement>(null);
 
   useEffect(() => {
-    const video = ref.current;
+    const video = videoRef.current;
     if (!video) return;
+
+    const startTime = start;
+    const endTime = end;
 
     const seekToStart = () => {
       try {
-        video.currentTime = start;
+        video.currentTime = startTime;
       } catch {
         /* seeking before metadata — retry on loadedmetadata */
       }
     };
+    // Some browsers ignore the `autoPlay` attribute on a src swap; kick
+    // playback explicitly once there's enough buffered to start.
+    const kick = () => {
+      void video.play().catch(() => {});
+    };
+    // Custom-trimmed seamless loop: once the clip passes `endTime`, jump
+    // straight back to `startTime` and keep playing (no pause, no flash).
     const onTimeUpdate = () => {
-      if (end > 0 && video.currentTime >= end) {
-        if (loop) {
-          video.currentTime = start;
-        } else {
-          video.pause();
-        }
+      if (endTime > 0 && video.currentTime >= endTime) {
+        video.currentTime = startTime;
+        void video.play();
       }
     };
     const onEnded = () => {
       if (loop) {
-        video.currentTime = start;
+        video.currentTime = startTime;
         void video.play();
       }
     };
 
     video.addEventListener("loadedmetadata", seekToStart);
+    video.addEventListener("loadeddata", kick);
+    video.addEventListener("canplay", kick);
     video.addEventListener("timeupdate", onTimeUpdate);
     video.addEventListener("ended", onEnded);
     if (video.readyState >= 1) seekToStart();
+    if (video.readyState >= 2) kick();
 
     return () => {
       video.removeEventListener("loadedmetadata", seekToStart);
+      video.removeEventListener("loadeddata", kick);
+      video.removeEventListener("canplay", kick);
       video.removeEventListener("timeupdate", onTimeUpdate);
       video.removeEventListener("ended", onEnded);
     };
@@ -136,17 +188,135 @@ function GvHeroVideo({
 
   return (
     <video
-      ref={ref}
+      ref={videoRef}
       key={src}
-      className="h-full w-full object-cover"
+      className="absolute inset-0 h-full w-full rounded-none object-cover"
       src={src}
       poster={poster || undefined}
       autoPlay
       muted
       playsInline
-      // native loop only when there is no trimmed end — otherwise the
-      // timeupdate handler owns the loop
+      preload="auto"
       loop={loop && end <= 0}
+    />
+  );
+}
+
+// YouTube background via the IFrame Player API. A bare embed with
+// `autoplay=1` in the URL frequently stalls on a spinner — Chrome's
+// autoplay policy treats the cross-origin frame conservatively — so we
+// drive the player object and call mute()+playVideo() in onReady, which
+// is what actually starts muted playback. The generated iframe is
+// oversized to 16:9 and centred so it covers any viewport with no
+// letterboxing; pointer-events are disabled so it reads as a backdrop.
+function GvHeroYouTube({
+  id,
+  start,
+  end,
+  loop,
+}: {
+  id: string;
+  start: number;
+  end: number;
+  loop: boolean;
+}) {
+  const hostRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    let player: YTPlayer | null = null;
+    let cancelled = false;
+
+    const ensureApi = (): Promise<void> => {
+      if (window.YT?.Player) return Promise.resolve();
+      return new Promise((resolve) => {
+        if (!document.getElementById("yt-iframe-api")) {
+          const tag = document.createElement("script");
+          tag.id = "yt-iframe-api";
+          tag.src = "https://www.youtube.com/iframe_api";
+          document.head.appendChild(tag);
+        }
+        const prev = window.onYouTubeIframeAPIReady;
+        window.onYouTubeIframeAPIReady = () => {
+          prev?.();
+          resolve();
+        };
+        const poll = window.setInterval(() => {
+          if (window.YT?.Player) {
+            window.clearInterval(poll);
+            resolve();
+          }
+        }, 120);
+      });
+    };
+
+    void ensureApi().then(() => {
+      if (cancelled || !hostRef.current || !window.YT?.Player) return;
+      const mount = document.createElement("div");
+      hostRef.current.replaceChildren(mount);
+      player = new window.YT.Player(mount, {
+        videoId: id,
+        playerVars: {
+          autoplay: 1,
+          mute: 1,
+          controls: 0,
+          playsinline: 1,
+          modestbranding: 1,
+          rel: 0,
+          disablekb: 1,
+          fs: 0,
+          iv_load_policy: 3,
+          loop: loop ? 1 : 0,
+          playlist: id,
+          origin: window.location.origin,
+          ...(start > 0 ? { start: Math.floor(start) } : {}),
+          ...(end > 0 ? { end: Math.floor(end) } : {}),
+        },
+        events: {
+          onReady: (e: YTEvent) => {
+            const s = e.target.getIframe().style;
+            s.position = "absolute";
+            s.left = "50%";
+            s.top = "50%";
+            s.width = "max(100%, 177.78vh)";
+            s.height = "max(100%, 56.25vw)";
+            s.transform = "translate(-50%, -50%)";
+            s.border = "0";
+            e.target.mute();
+            e.target.playVideo();
+          },
+          onStateChange: (e: YTEvent) => {
+            // 5 === CUED: the video is ready but parked — nudge it into
+            // playback (covers the case where the initial playVideo() in
+            // onReady lands before the player will accept it).
+            if (e.data === 5) {
+              e.target.mute();
+              e.target.playVideo();
+            }
+            // 0 === ENDED. With a trimmed `end` the player fires ENDED at
+            // the trim point; jump back to `start` and keep playing.
+            if (e.data === 0 && loop) {
+              e.target.seekTo(start > 0 ? start : 0, true);
+              e.target.playVideo();
+            }
+          },
+        },
+      });
+    });
+
+    return () => {
+      cancelled = true;
+      try {
+        player?.destroy();
+      } catch {
+        /* already gone */
+      }
+    };
+  }, [id, start, end, loop]);
+
+  return (
+    <div
+      ref={hostRef}
+      className="pointer-events-none absolute inset-0 overflow-hidden bg-black"
     />
   );
 }
@@ -172,13 +342,25 @@ function Hero({
     <section className="relative isolate flex min-h-[88vh] items-center overflow-hidden border-b border-white/15 bg-black">
       <div className="absolute inset-0 -z-10">
         {useVideo ? (
-          <GvHeroVideo
-            src={videoUrl}
-            start={videoStart}
-            end={videoEnd}
-            loop={videoLoop}
-            poster={imageUrl}
-          />
+          (() => {
+            const parsed = parseHeroVideo(videoUrl);
+            return parsed.kind === "youtube" ? (
+              <GvHeroYouTube
+                id={parsed.id}
+                start={videoStart}
+                end={videoEnd}
+                loop={videoLoop}
+              />
+            ) : (
+              <GvHeroVideoFile
+                src={parsed.url}
+                start={videoStart}
+                end={videoEnd}
+                loop={videoLoop}
+                poster={imageUrl}
+              />
+            );
+          })()
         ) : (
           <Image
             src={imageUrl}
@@ -189,9 +371,9 @@ function Hero({
             className="object-cover"
           />
         )}
-        {/* engineered scrim — heavier left where the copy sits */}
-        <div className="absolute inset-0 bg-gradient-to-r from-black/85 via-black/55 to-black/20" />
-        <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-transparent to-transparent" />
+        {/* engineered scrim — heavier left where the copy sits (25% more transparent) */}
+        <div className="absolute inset-0 bg-gradient-to-r from-black/64 via-black/41 to-black/15" />
+        <div className="absolute inset-0 bg-gradient-to-t from-black/53 via-transparent to-transparent" />
       </div>
 
       <span className="absolute inset-x-0 top-0 h-[3px] bg-[var(--gv-accent)]" />
@@ -200,14 +382,13 @@ function Hero({
         <div className="max-w-2xl">
           <p className="flex items-center gap-3 font-[family-name:var(--font-gv-display)] text-[11px] font-semibold uppercase tracking-[0.28em] text-[#C8CBD0]">
             <span className="inline-block h-4 w-[3px] bg-[var(--gv-accent)]" />
-            Colección Villasuso
+            Colección Vilasuso
           </p>
-          <h1 className="mt-6 font-[family-name:var(--font-gv-display)] text-4xl font-extrabold uppercase leading-[1.05] tracking-tight text-white sm:text-6xl lg:text-7xl">
-            Selección alemana y japonesa
+          <h1 className="mt-6 font-[family-name:var(--font-gv-display)] text-4xl font-light uppercase leading-[1.05] tracking-tight text-white sm:text-6xl lg:text-7xl">
+            Exclusividad, selección y servicio
           </h1>
           <p className="mt-6 max-w-md text-base leading-relaxed text-white/70">
-            Rendimiento con procedencia. Una curaduría de BMW, MINI y Mazda, cada unidad
-            verificada y presentada como una ficha de ingeniería.
+            El inventario más amplio de alta gama. Respaldado por una atención personal.
           </p>
           <div className="mt-9">
             <GvButton href="#coleccion">
@@ -319,7 +500,7 @@ function CollectionGrid({ cars, loading }: { cars: GvCar[]; loading: boolean }) 
       <div className="flex flex-wrap items-end justify-between gap-4 border-b border-white/15 pb-6">
         <div>
           <h2 className="font-[family-name:var(--font-gv-display)] text-2xl font-bold uppercase tracking-tight text-white sm:text-3xl">
-            Colección Villasuso
+            Colección Vilasuso
           </h2>
           <p className="mt-2 text-sm text-white/55">
             Selección alemana y japonesa — disponibilidad inmediata, procedencia documentada.
@@ -489,6 +670,7 @@ function SliderRow({
 
 function ContactBlock() {
   const { settings } = useSettings();
+  const theme = resolveThemeSettings(settings, "gustavo-villasuso");
   const leadForm = useLeadForm();
 
   const [name, setName] = useState("");
@@ -513,7 +695,7 @@ function ContactBlock() {
         Escribinos
       </h2>
       <p className="mt-3 text-sm leading-relaxed text-white/55">
-        Dejanos tus datos y un asesor de {settings.dealershipName} te contacta dentro de un día
+        Dejanos tus datos y un asesor de {theme.logoText} te contacta dentro de un día
         hábil.
       </p>
 

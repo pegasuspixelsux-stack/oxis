@@ -3,6 +3,7 @@
 import Link from "next/link";
 import type { CSSProperties, ReactNode } from "react";
 import { useSettings } from "@/components/settings-provider";
+import { resolveThemeSettings } from "@/lib/db/settings";
 import { buildWhatsAppLink } from "@/lib/whatsapp";
 import { carmaxFontClass } from "../fonts";
 
@@ -28,10 +29,11 @@ const FOOTER_LINKS = [
 // `var(--carmax-accent)`.
 export function CarmaxShell({ children }: { children: ReactNode }) {
   const { settings } = useSettings();
+  const { logoText, address } = resolveThemeSettings(settings, "carmax");
   const telHref = `tel:${settings.phoneNumber.replace(/[^0-9+]/g, "")}`;
   const whatsappHref = buildWhatsAppLink(
     settings.whatsappNumber,
-    `Hola ${settings.dealershipName}, quiero hacer una consulta.`
+    `Hola ${logoText}, quiero hacer una consulta.`
   );
   const hoursLines = settings.businessHours.split("\n").filter(Boolean);
 
@@ -48,7 +50,7 @@ export function CarmaxShell({ children }: { children: ReactNode }) {
             className="flex items-center gap-2 text-base font-bold uppercase tracking-tight"
           >
             <span className="inline-block h-5 w-5 shrink-0 bg-[var(--carmax-accent)]" />
-            {settings.dealershipName}
+            {logoText}
           </Link>
 
           <nav className="hidden items-center gap-6 text-sm font-medium md:flex">
@@ -80,7 +82,7 @@ export function CarmaxShell({ children }: { children: ReactNode }) {
             <div>
               <p className="flex items-center gap-2 text-base font-bold uppercase tracking-tight">
                 <span className="inline-block h-5 w-5 shrink-0 bg-[var(--carmax-accent)]" />
-                {settings.dealershipName}
+                {logoText}
               </p>
               <p className="mt-3 max-w-xs text-sm leading-relaxed text-[#16202A]/60">
                 Miles de vehículos usados y 0km en un solo lugar. Buscá, compará precios y
@@ -122,7 +124,7 @@ export function CarmaxShell({ children }: { children: ReactNode }) {
                 Dónde estamos
               </h3>
               <ul className="mt-3 flex flex-col gap-2 text-sm text-[#16202A]/60">
-                <li>{settings.address}</li>
+                <li>{address}</li>
                 <li>
                   <a href={telHref} className="transition-colors hover:text-[var(--carmax-accent)]">
                     {settings.phoneNumber}
@@ -144,7 +146,7 @@ export function CarmaxShell({ children }: { children: ReactNode }) {
 
           <div className="mt-10 flex flex-col gap-2 border-t border-[#16202A]/12 pt-5 text-xs text-[#16202A]/45 sm:flex-row sm:items-center sm:justify-between">
             <p>
-              &copy; {new Date().getFullYear()} {settings.dealershipName}. Todos los derechos
+              &copy; {new Date().getFullYear()} {logoText}. Todos los derechos
               reservados.
             </p>
             <Link href="/login" className="transition-colors hover:text-[#16202A]/70">

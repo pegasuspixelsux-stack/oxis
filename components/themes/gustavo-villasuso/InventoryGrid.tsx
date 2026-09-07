@@ -91,7 +91,7 @@ export default function InventoryGrid({
       <section className="mx-auto max-w-7xl px-4 py-14 sm:px-6 lg:px-8">
         <div className="border-b border-white/15 pb-6">
           <p className="font-[family-name:var(--font-gv-display)] text-[11px] font-semibold uppercase tracking-[0.28em] text-[#C8CBD0]">
-            Colección Villasuso
+            Colección Vilasuso
           </p>
           <h1 className="mt-3 font-[family-name:var(--font-gv-display)] text-3xl font-extrabold uppercase tracking-tight text-white sm:text-4xl">
             Inventario

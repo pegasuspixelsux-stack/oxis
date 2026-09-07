@@ -5,6 +5,7 @@ import { useEffect, useState } from "react";
 import { AnimatePresence, motion } from "motion/react";
 import { PhoneIcon, MenuIcon, CloseIcon } from "@/components/icons";
 import { useSettings } from "@/components/settings-provider";
+import { resolveThemeSettings } from "@/lib/db/settings";
 
 const NAV_LINKS = [
   { href: "#inventory", label: "Inventario" },
@@ -15,8 +16,9 @@ const NAV_LINKS = [
 
 export function SiteHeader() {
   const { settings } = useSettings();
+  const { logoText } = resolveThemeSettings(settings, "bmw");
   const telHref = `tel:${settings.phoneNumber.replace(/[^0-9+]/g, "")}`;
-  const [nameFirst, ...nameRest] = settings.dealershipName.split(" ");
+  const [nameFirst, ...nameRest] = logoText.split(" ");
   const [scrolled, setScrolled] = useState(false);
   const [open, setOpen] = useState(false);
 

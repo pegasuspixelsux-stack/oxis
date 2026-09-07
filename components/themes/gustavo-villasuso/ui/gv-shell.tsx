@@ -3,6 +3,7 @@
 import Link from "next/link";
 import type { CSSProperties, ReactNode } from "react";
 import { useSettings } from "@/components/settings-provider";
+import { resolveThemeSettings } from "@/lib/db/settings";
 import { buildWhatsAppLink } from "@/lib/whatsapp";
 import { gvFontClass } from "../fonts";
 
@@ -27,10 +28,11 @@ const FOOTER_LINKS = [
 // GvField focus border, spec-panel marks) can read `var(--gv-accent)`.
 export function GvShell({ children }: { children: ReactNode }) {
   const { settings } = useSettings();
+  const { logoText, address } = resolveThemeSettings(settings, "gustavo-villasuso");
   const telHref = `tel:${settings.phoneNumber.replace(/[^0-9+]/g, "")}`;
   const whatsappHref = buildWhatsAppLink(
     settings.whatsappNumber,
-    `Hola ${settings.dealershipName}, quisiera consultar por una unidad de la Colección Villasuso.`
+    `Hola ${logoText}, quisiera consultar por una unidad de la Colección Vilasuso.`
   );
   const hoursLines = settings.businessHours.split("\n").filter(Boolean);
 
@@ -45,7 +47,7 @@ export function GvShell({ children }: { children: ReactNode }) {
           <Link href="#top" className="flex items-center gap-3">
             <span className="inline-block h-6 w-[3px] shrink-0 bg-[var(--gv-accent)]" />
             <span className="font-[family-name:var(--font-gv-display)] text-base font-bold uppercase tracking-[0.12em] text-white">
-              {settings.dealershipName}
+              {logoText}
             </span>
           </Link>
 
@@ -88,10 +90,10 @@ export function GvShell({ children }: { children: ReactNode }) {
             <div>
               <p className="flex items-center gap-3 font-[family-name:var(--font-gv-display)] text-base font-bold uppercase tracking-[0.12em]">
                 <span className="inline-block h-6 w-[3px] shrink-0 bg-[var(--gv-accent)]" />
-                {settings.dealershipName}
+                {logoText}
               </p>
               <p className="mt-4 max-w-xs text-sm leading-relaxed text-white/60">
-                Colección Villasuso — selección alemana y japonesa. Rendimiento con
+                Colección Vilasuso — selección alemana y japonesa. Rendimiento con
                 procedencia. Cada unidad, verificada.
               </p>
               <p className="mt-4 font-[family-name:var(--font-gv-display)] text-[11px] font-semibold uppercase tracking-[0.28em] text-[#C8CBD0]">
@@ -133,7 +135,7 @@ export function GvShell({ children }: { children: ReactNode }) {
                 Dónde estamos
               </h3>
               <ul className="mt-4 flex flex-col gap-3 text-sm text-white/60">
-                <li>{settings.address}</li>
+                <li>{address}</li>
                 <li>
                   <a href={telHref} className="transition-colors hover:text-white">
                     {settings.phoneNumber}
@@ -155,7 +157,7 @@ export function GvShell({ children }: { children: ReactNode }) {
 
           <div className="mt-12 flex flex-col gap-2 border-t border-white/15 pt-6 text-xs text-white/40 sm:flex-row sm:items-center sm:justify-between">
             <p>
-              &copy; {new Date().getFullYear()} {settings.dealershipName}. Todos los derechos
+              &copy; {new Date().getFullYear()} {logoText}. Todos los derechos
               reservados.
             </p>
             <Link href="/login" className="transition-colors hover:text-white/70">

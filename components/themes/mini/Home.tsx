@@ -4,6 +4,7 @@ import { useEffect, useState, type FormEvent } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { useSettings } from "@/components/settings-provider";
+import { resolveThemeSettings } from "@/lib/db/settings";
 import { useLeadForm } from "@/lib/hooks/use-lead-form";
 import { monthlyPayment } from "@/lib/finance";
 import {
@@ -58,11 +59,12 @@ function numericPrice(price: string): number {
 
 export default function Home({ loading, filterCars }: HomeProps) {
   const { settings } = useSettings();
+  const { logoText } = resolveThemeSettings(settings, "mini");
   const featured = filterCars({}).slice(0, 6);
 
   return (
     <MiniShell>
-      <Hero heroImage={settings.heroBannerImageUrl} dealershipName={settings.dealershipName} />
+      <Hero heroImage={settings.heroBannerImageUrl} dealershipName={logoText} />
       <GuaranteesStrip />
       <FeaturedInventory cars={featured} loading={loading} />
       <FinanceCalculator />
@@ -318,6 +320,7 @@ function RangeRow({
 
 function ContactBlock() {
   const { settings } = useSettings();
+  const { logoText } = resolveThemeSettings(settings, "mini");
   const leadForm = useLeadForm();
 
   const [name, setName] = useState("");
@@ -343,7 +346,7 @@ function ContactBlock() {
           Escribinos
         </h2>
         <p className="mt-3 text-sm leading-relaxed text-neutral-600">
-          Dejanos tus datos y un asesor de {settings.dealershipName} te contacta dentro de un día
+          Dejanos tus datos y un asesor de {logoText} te contacta dentro de un día
           hábil.
         </p>
 

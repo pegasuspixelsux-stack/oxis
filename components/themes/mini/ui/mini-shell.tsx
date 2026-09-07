@@ -3,6 +3,7 @@
 import Link from "next/link";
 import type { CSSProperties, ReactNode } from "react";
 import { useSettings } from "@/components/settings-provider";
+import { resolveThemeSettings } from "@/lib/db/settings";
 import { buildWhatsAppLink } from "@/lib/whatsapp";
 import { miniFontClass } from "../fonts";
 
@@ -26,10 +27,11 @@ const FOOTER_LINKS = [
 // in the MINI look: uppercase, 2px borders, roundel motif.
 export function MiniShell({ children }: { children: ReactNode }) {
   const { settings } = useSettings();
+  const { logoText, address } = resolveThemeSettings(settings, "mini");
   const telHref = `tel:${settings.phoneNumber.replace(/[^0-9+]/g, "")}`;
   const whatsappHref = buildWhatsAppLink(
     settings.whatsappNumber,
-    `Hola ${settings.dealershipName}, quiero hacer una consulta.`
+    `Hola ${logoText}, quiero hacer una consulta.`
   );
   const hoursLines = settings.businessHours.split("\n").filter(Boolean);
 
@@ -46,7 +48,7 @@ export function MiniShell({ children }: { children: ReactNode }) {
             className="flex items-center gap-2.5 text-lg font-extrabold uppercase tracking-tight"
           >
             <span className="inline-block h-4 w-4 shrink-0 rounded-full border-2 border-neutral-950 bg-[var(--mini-accent)]" />
-            {settings.dealershipName}
+            {logoText}
           </Link>
 
           <nav className="hidden items-center gap-8 text-xs font-bold uppercase tracking-widest md:flex">
@@ -84,7 +86,7 @@ export function MiniShell({ children }: { children: ReactNode }) {
             <div>
               <p className="flex items-center gap-2.5 text-lg font-extrabold uppercase tracking-tight">
                 <span className="inline-block h-4 w-4 shrink-0 rounded-full border-2 border-white bg-[var(--mini-accent)]" />
-                {settings.dealershipName}
+                {logoText}
               </p>
               <p className="mt-4 max-w-xs text-sm leading-relaxed text-neutral-300">
                 Usados certificados con precios transparentes, inspección de 150 puntos y
@@ -126,7 +128,7 @@ export function MiniShell({ children }: { children: ReactNode }) {
                 Visitanos
               </h3>
               <ul className="mt-4 flex flex-col gap-3 text-sm text-neutral-300">
-                <li>{settings.address}</li>
+                <li>{address}</li>
                 <li>
                   <a href={telHref} className="transition-colors hover:text-white">
                     {settings.phoneNumber}
@@ -148,7 +150,7 @@ export function MiniShell({ children }: { children: ReactNode }) {
 
           <div className="mt-12 flex flex-col gap-2 border-t-2 border-neutral-800 pt-6 text-xs text-neutral-500 sm:flex-row sm:items-center sm:justify-between">
             <p>
-              &copy; {new Date().getFullYear()} {settings.dealershipName}. Todos los derechos
+              &copy; {new Date().getFullYear()} {logoText}. Todos los derechos
               reservados.
             </p>
             <Link href="/login" className="uppercase tracking-widest hover:text-neutral-300">

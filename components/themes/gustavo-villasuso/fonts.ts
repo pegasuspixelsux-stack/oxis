@@ -1,4 +1,4 @@
-// gustavo-villasuso theme typography — "Gustavo Villasuso BMW, MINI &
+// gustavo-villasuso theme typography — "Gonzalo Vilasuso BMW, MINI &
 // Mazda". The brand voice is a German engineering brochure: crisp,
 // precise, confident, never condensed-aggressive and never thin-fashion.
 // Chivo is the display face — a clean, engineered grotesque with a

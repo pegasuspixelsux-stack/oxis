@@ -3,6 +3,7 @@
 import { useState, type FormEvent } from "react";
 import Image from "next/image";
 import { useSettings } from "@/components/settings-provider";
+import { resolveThemeSettings } from "@/lib/db/settings";
 import { useLeadForm } from "@/lib/hooks/use-lead-form";
 import { monthlyPayment, estimateListingPayment } from "@/lib/finance";
 import { ArrowRightIcon } from "@/components/icons";
@@ -50,11 +51,12 @@ function listingMonthly(price: string): number | null {
 
 export default function HomeHero({ loading, filterCars }: HomeProps) {
   const { settings } = useSettings();
+  const { logoText } = resolveThemeSettings(settings, "difor");
   const featured = filterCars({}).slice(0, 6);
 
   return (
     <DiforShell>
-      <Hero heroImage={settings.heroBannerImageUrl} dealershipName={settings.dealershipName} />
+      <Hero heroImage={settings.heroBannerImageUrl} dealershipName={logoText} />
       <GuaranteeStrip />
       <FeaturedGrid cars={featured} loading={loading} />
       <FinancingModule />
@@ -391,6 +393,7 @@ function SliderRow({
 
 function ContactBlock() {
   const { settings } = useSettings();
+  const { logoText } = resolveThemeSettings(settings, "difor");
   const leadForm = useLeadForm();
 
   const [name, setName] = useState("");
@@ -413,7 +416,7 @@ function ContactBlock() {
     <section id="contacto" className="mx-auto max-w-3xl px-4 py-16 sm:px-6 lg:px-8">
       <h2 className="text-2xl font-semibold tracking-tight sm:text-3xl">Escribinos</h2>
       <p className="mt-3 text-sm leading-relaxed text-[#1B2733]/60">
-        Dejanos tus datos y un asesor de {settings.dealershipName} te contacta dentro de un día
+        Dejanos tus datos y un asesor de {logoText} te contacta dentro de un día
         hábil.
       </p>
 

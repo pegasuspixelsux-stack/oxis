@@ -13,6 +13,7 @@ import { PillGroup } from "@/components/themes/bmw/ui/pill-group";
 import { FilterSelect } from "@/components/themes/bmw/inventory/filter-select";
 import { useShowroom } from "@/components/showroom-context";
 import { useSettings } from "@/components/settings-provider";
+import { resolveThemeSettings } from "@/lib/db/settings";
 import { buildWhatsAppLink } from "@/lib/whatsapp";
 import { PhoneIcon, MailIcon, PinIcon, ClockIcon, CheckCircleIcon, WhatsAppIcon } from "@/components/icons";
 
@@ -36,11 +37,12 @@ type Errors = Partial<Record<"name" | "email" | "phone", string>>;
 export function ContactSection() {
   const { selectedVehicleId } = useShowroom();
   const { settings } = useSettings();
+  const { logoText, address } = resolveThemeSettings(settings, "bmw");
   const telHref = `tel:${settings.phoneNumber.replace(/[^0-9+]/g, "")}`;
-  const mapsHref = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(settings.address)}`;
+  const mapsHref = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(address)}`;
   const whatsappHref = buildWhatsAppLink(
     settings.whatsappNumber,
-    `Hola ${settings.dealershipName}, quiero hacer una consulta.`
+    `Hola ${logoText}, quiero hacer una consulta.`
   );
 
   const [name, setName] = useState("");
@@ -317,7 +319,7 @@ export function ContactSection() {
               <ul className="flex flex-col gap-4 text-sm text-fg-muted">
                 <li className="flex items-start gap-3">
                   <PinIcon className="mt-0.5 h-4 w-4 shrink-0 text-accent" />
-                  <span>{settings.address}</span>
+                  <span>{address}</span>
                 </li>
                 <li className="flex items-start gap-3">
                   <PhoneIcon className="mt-0.5 h-4 w-4 shrink-0 text-accent" />

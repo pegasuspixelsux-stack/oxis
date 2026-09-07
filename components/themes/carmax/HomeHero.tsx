@@ -2,6 +2,7 @@
 
 import { useEffect, useMemo, useState, type FormEvent } from "react";
 import { useSettings } from "@/components/settings-provider";
+import { resolveThemeSettings } from "@/lib/db/settings";
 import { useLeadForm } from "@/lib/hooks/use-lead-form";
 import { monthlyPayment, estimateListingPayment } from "@/lib/finance";
 import type { HomeProps } from "@/components/themes/types";
@@ -611,6 +612,7 @@ function ValuePropBlock() {
 
 function ContactCTA() {
   const { settings } = useSettings();
+  const { logoText } = resolveThemeSettings(settings, "carmax");
   const leadForm = useLeadForm();
 
   const [name, setName] = useState("");
@@ -631,7 +633,7 @@ function ContactCTA() {
     <section id="contacto" className="mx-auto max-w-3xl px-4 py-12 sm:px-6 lg:px-8">
       <h2 className="text-lg font-bold tracking-tight">Escribinos</h2>
       <p className="mt-1 text-sm text-[#16202A]/60">
-        Dejanos tus datos y un asesor de {settings.dealershipName} te contacta dentro de un día
+        Dejanos tus datos y un asesor de {logoText} te contacta dentro de un día
         hábil.
       </p>
 

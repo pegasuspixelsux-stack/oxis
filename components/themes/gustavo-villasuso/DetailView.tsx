@@ -2,6 +2,7 @@
 
 import { useEffect, useState, type FormEvent } from "react";
 import { useSettings } from "@/components/settings-provider";
+import { resolveThemeSettings } from "@/lib/db/settings";
 import { buildWhatsAppLink } from "@/lib/whatsapp";
 import {
   estimateListingPayment,
@@ -34,6 +35,7 @@ const DEFAULT_FEATURES = [
 
 export default function DetailView({ car, loading, notFound, leadForm }: VehicleDetailProps) {
   const { settings } = useSettings();
+  const { logoText } = resolveThemeSettings(settings, "gustavo-villasuso");
 
   const [activeImage, setActiveImage] = useState(0);
   const [name, setName] = useState("");
@@ -44,7 +46,7 @@ export default function DetailView({ car, loading, notFound, leadForm }: Vehicle
   useEffect(() => {
     if (car) {
       setMessage(
-        `Hola, estoy viendo el ${car.title} (${car.price}) de la Colección Villasuso. ¿Sigue disponible?`
+        `Hola, estoy viendo el ${car.title} (${car.price}) de la Colección Vilasuso. ¿Sigue disponible?`
       );
     }
     setActiveImage(0);
@@ -267,7 +269,7 @@ export default function DetailView({ car, loading, notFound, leadForm }: Vehicle
             Consultá por esta unidad
           </h2>
           <p className="mt-2 text-sm text-white/55">
-            Te responde un asesor de {settings.dealershipName} dentro de un día hábil.
+            Te responde un asesor de {logoText} dentro de un día hábil.
           </p>
 
           {leadForm.success ? (
@@ -277,7 +279,7 @@ export default function DetailView({ car, loading, notFound, leadForm }: Vehicle
                 Consulta enviada
               </h3>
               <p className="mt-2 text-sm text-white/55">
-                Un asesor de {settings.dealershipName} se comunica a la brevedad.
+                Un asesor de {logoText} se comunica a la brevedad.
               </p>
               <button
                 type="button"

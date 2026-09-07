@@ -4,6 +4,7 @@ import { useState, type FormEvent } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { useSettings } from "@/components/settings-provider";
+import { resolveThemeSettings } from "@/lib/db/settings";
 import { useLeadForm } from "@/lib/hooks/use-lead-form";
 import { monthlyPayment, estimateListingPayment } from "@/lib/finance";
 import type { HomeProps } from "@/components/themes/types";
@@ -50,11 +51,12 @@ function listingMonthly(price: string): number | null {
 
 export default function HomeHero({ loading, filterCars }: HomeProps) {
   const { settings } = useSettings();
+  const { logoText } = resolveThemeSettings(settings, "renato-conti");
   const curated = filterCars({}).slice(0, 6);
 
   return (
     <RcShell>
-      <Hero heroImage={settings.heroBannerImageUrl} dealershipName={settings.dealershipName} />
+      <Hero heroImage={settings.heroBannerImageUrl} dealershipName={logoText} />
       <GuaranteesPassage />
       <CuratedCollection cars={curated} loading={loading} />
       <FinancePassage />
@@ -289,6 +291,7 @@ function FinancePassage() {
 
 function ContactBlock() {
   const { settings } = useSettings();
+  const { logoText } = resolveThemeSettings(settings, "renato-conti");
   const leadForm = useLeadForm();
 
   const [name, setName] = useState("");
@@ -315,7 +318,7 @@ function ContactBlock() {
           Escríbanos
         </h2>
         <p className="mt-8 text-sm leading-relaxed text-[#8C8C8C]">
-          Deje sus datos y un asesor de {settings.dealershipName} le responde dentro de un día hábil,
+          Deje sus datos y un asesor de {logoText} le responde dentro de un día hábil,
           con la reserva que el caso amerita.
         </p>
 

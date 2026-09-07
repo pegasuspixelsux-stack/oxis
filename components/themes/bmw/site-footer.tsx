@@ -5,6 +5,7 @@ import { Container } from "@/components/themes/bmw/ui/container";
 import { PhoneIcon, MailIcon, PinIcon, InstagramIcon, FacebookIcon, XSocialIcon } from "@/components/icons";
 import { ThemeSwitcher } from "@/components/themes/bmw/theme-switcher";
 import { useSettings } from "@/components/settings-provider";
+import { resolveThemeSettings } from "@/lib/db/settings";
 
 const QUICK_LINKS = [
   { href: "#top", label: "Inicio" },
@@ -15,6 +16,7 @@ const QUICK_LINKS = [
 
 export function SiteFooter() {
   const { settings } = useSettings();
+  const { logoText, address } = resolveThemeSettings(settings, "bmw");
   const telHref = `tel:${settings.phoneNumber.replace(/[^0-9+]/g, "")}`;
   const hoursLines = settings.businessHours.split("\n").filter(Boolean);
 
@@ -23,7 +25,7 @@ export function SiteFooter() {
       <Container className="py-14 sm:py-16">
         <div className="grid grid-cols-1 gap-10 sm:grid-cols-2 lg:grid-cols-4 lg:gap-8">
           <div>
-            <p className="text-lg font-semibold uppercase tracking-tight text-fg">{settings.dealershipName}</p>
+            <p className="text-lg font-semibold uppercase tracking-tight text-fg">{logoText}</p>
             <p className="mt-3 max-w-xs text-sm leading-relaxed text-fg-muted">
               Una concesionaria de usados certificados basada en precios transparentes,
               inspecciones rigurosas y garantías que podés exigirnos.
@@ -98,7 +100,7 @@ export function SiteFooter() {
             <ul className="mt-4 flex flex-col gap-3 text-sm text-fg-muted">
               <li className="flex items-start gap-2.5">
                 <PinIcon className="mt-0.5 h-4 w-4 shrink-0 text-accent" />
-                <span>{settings.address}</span>
+                <span>{address}</span>
               </li>
               <li className="flex items-start gap-2.5">
                 <PhoneIcon className="mt-0.5 h-4 w-4 shrink-0 text-accent" />
@@ -118,7 +120,7 @@ export function SiteFooter() {
 
         <div className="mt-12 flex flex-col gap-2 border-t border-border pt-6 text-xs text-fg-subtle sm:flex-row sm:items-center sm:justify-between">
           <p>
-            &copy; {new Date().getFullYear()} {settings.dealershipName}. Todos los derechos
+            &copy; {new Date().getFullYear()} {logoText}. Todos los derechos
             reservados.
           </p>
           <p className="flex items-center gap-1">
