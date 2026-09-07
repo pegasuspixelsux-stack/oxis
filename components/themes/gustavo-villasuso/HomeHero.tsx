@@ -339,7 +339,7 @@ function Hero({
   dealershipName: string;
 }) {
   return (
-    <section className="relative isolate flex min-h-[88vh] items-center overflow-hidden border-b border-white/15 bg-black">
+    <section className="relative isolate flex min-h-[88vh] items-end overflow-hidden border-b border-white/15 bg-black">
       <div className="absolute inset-0 -z-10">
         {useVideo ? (
           (() => {
@@ -378,46 +378,32 @@ function Hero({
 
       <span className="absolute inset-x-0 top-0 h-[3px] bg-[var(--gv-accent)]" />
 
-      <div className="mx-auto w-full max-w-7xl px-4 py-24 sm:px-6 lg:px-8">
-        <div className="max-w-2xl">
-          <p className="flex items-center gap-3 font-[family-name:var(--font-gv-display)] text-[11px] font-semibold uppercase tracking-[0.28em] text-[#C8CBD0]">
-            <span className="inline-block h-4 w-[3px] bg-[var(--gv-accent)]" />
-            Colección Vilasuso
-          </p>
-          <h1 className="mt-6 font-[family-name:var(--font-gv-display)] text-4xl font-light uppercase leading-[1.05] tracking-tight text-white sm:text-6xl lg:text-7xl">
-            Exclusividad, selección y servicio
-          </h1>
-          <p className="mt-6 max-w-md text-base leading-relaxed text-white/70">
-            El inventario más amplio de alta gama. Respaldado por una atención personal.
-          </p>
-          <div className="mt-9">
-            <GvButton href="#coleccion">
-              Ver la colección
-              <ArrowRightIcon className="h-4 w-4" />
-            </GvButton>
+      {/* bottom overlay band: eyebrow + heading on the left, support copy
+          and call to action on the right */}
+      <div className="relative w-full bg-gradient-to-t from-black/85 via-black/55 to-transparent">
+        <div className="mx-auto grid w-full max-w-7xl grid-cols-1 gap-8 px-4 py-12 sm:px-6 lg:grid-cols-2 lg:items-end lg:gap-12 lg:py-16 lg:px-8">
+          <div>
+            <p className="flex items-center gap-3 font-[family-name:var(--font-gv-display)] text-[11px] font-semibold uppercase tracking-[0.28em] text-[#C8CBD0]">
+              <span className="inline-block h-4 w-[3px] bg-[var(--gv-accent)]" />
+              Colección Vilasuso
+            </p>
+            <h1 className="mt-6 font-[family-name:var(--font-gv-display)] text-4xl font-light uppercase leading-[1.05] tracking-tight text-white sm:text-5xl lg:text-6xl">
+              Exclusividad, selección y servicio
+            </h1>
           </div>
-          <dl className="mt-10 grid max-w-xl grid-cols-3 gap-px border border-white/15 bg-white/15 font-[family-name:var(--font-gv-display)]">
-            {[
-              { k: "Marcas", v: "BMW · MINI · Mazda" },
-              { k: "Verificación", v: "150 puntos" },
-              { k: "Procedencia", v: "Documentada" },
-            ].map((s) => (
-              <div key={s.k} className="bg-black px-4 py-4">
-                <dt className="text-[10px] font-semibold uppercase tracking-[0.2em] text-white/45">
-                  {s.k}
-                </dt>
-                <dd className="mt-1.5 text-xs font-semibold uppercase tracking-wide text-white">
-                  {s.v}
-                </dd>
-              </div>
-            ))}
-          </dl>
+          <div className="lg:pb-1">
+            <p className="max-w-md text-base leading-relaxed text-white/70">
+              El inventario más amplio de alta gama. Respaldado por una atención personal.
+            </p>
+            <div className="mt-8">
+              <GvButton href="#coleccion">
+                Ver la colección
+                <ArrowRightIcon className="h-4 w-4" />
+              </GvButton>
+            </div>
+          </div>
         </div>
       </div>
-
-      <span className="absolute bottom-0 left-0 bg-[var(--gv-accent)] px-3 py-1.5 font-[family-name:var(--font-gv-display)] text-[10px] font-semibold uppercase tracking-[0.2em] text-white">
-        Cada unidad, verificada
-      </span>
     </section>
   );
 }
@@ -426,7 +412,11 @@ function GuaranteeStrip() {
   return (
     <section className="border-b border-white/15 bg-[#0B0B0C]">
       <div className="mx-auto max-w-7xl px-4 py-16 sm:px-6 lg:px-8">
-        <h2 className="font-[family-name:var(--font-gv-display)] text-2xl font-bold uppercase tracking-tight text-white sm:text-3xl">
+        <p className="flex items-center gap-3 font-[family-name:var(--font-gv-display)] text-[11px] font-semibold uppercase tracking-[0.28em] text-[#C8CBD0]">
+          <span className="inline-block h-4 w-[3px] bg-[var(--gv-accent)]" />
+          Cada unidad, verificada
+        </p>
+        <h2 className="mt-5 font-[family-name:var(--font-gv-display)] text-2xl font-bold uppercase tracking-tight text-white sm:text-3xl">
           Lo que verificamos en cada unidad
         </h2>
         <div className="mt-10 grid grid-cols-1 gap-px border border-white/15 bg-white/15 sm:grid-cols-2 lg:grid-cols-4">
